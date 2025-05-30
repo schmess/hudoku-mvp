@@ -434,6 +434,10 @@
         // Add this at the top of your script section
         let showOnlyPossibleNumbers = false;
         
+        function isEmptyCell(templateCell) {
+            return templateCell?.[0] === '-';
+        }
+        
         function shuffle(array) {
             const arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -456,7 +460,7 @@
             
             // Check region constraint
             const region = template[row][col];
-            if (region === '-') return true;
+            if (isEmptyCell(region)) return true;
             
             for (let r = 0; r < template.length; r++) {
                 for (let c = 0; c < template[r].length; c++) {
@@ -512,7 +516,7 @@
         }
         
         function solvePuzzle(template) {
-            const grid = template.map(row => row.map(cell => cell?.[0] === '-' ? '-' : 0));
+            const grid = template.map(row => row.map(cell => isEmptyCell(cell) ? '-' : 0));
             
             function backtrack() {
                 for (let row = 0; row < grid.length; row++) {
@@ -546,14 +550,14 @@
             if (!solution) return null;
             
             // Create revealed grid - initially all zeros (hidden)
-            const revealed = template.map(row => row.map(cell => cell === '-' ? '-' : 0));
+            const revealed = template.map(row => row.map(cell => isEmptyCell(cell) ? '-' : 0));
             
             // Get cells for each region
             const regionCells = {};
             for (let r = 0; r < template.length; r++) {
                 for (let c = 0; c < template[r].length; c++) {
                     const region = template[r][c];
-                    if (region !== '-') {
+                    if (!isEmptyCell(region)) {
                         if (!regionCells[region]) regionCells[region] = [];
                         regionCells[region].push([r, c]);
                     }
@@ -639,7 +643,7 @@
                     cellEl.setAttribute('data-col', c);
                     
                     const region = template[r][c];
-                    if (region[0] === '-') {
+                    if (isEmptyCell(region)) {
                         cellEl.className += ' empty';
                         // Get the mask for this empty cell
                         const mask = region.slice(1); // e.g., for '-a', mask is 'a'
@@ -832,7 +836,7 @@
             const unrevealedCells = [];
             for (let r = 0; r < data.revealed.length; r++) {
                 for (let c = 0; c < data.revealed[r].length; c++) {
-                    if (template[r][c] !== '-' && data.revealed[r][c] === 0) {
+                    if (!isEmptyCell(template[r][c]) && data.revealed[r][c] === 0) {
                         unrevealedCells.push([r, c]);
                     }
                 }
@@ -848,7 +852,7 @@
             let target = null;
             if (lastActiveCell && lastActiveCell.puzzleType === currentPuzzleType) {
                 const { row, col } = lastActiveCell;
-                if (data.revealed[row][col] === 0 && template[row][col] !== '-') {
+                if (data.revealed[row][col] === 0 && !isEmptyCell(template[row][col])) {
                     target = [row, col];
                 }
             }
@@ -1069,7 +1073,7 @@
             const unrevealedCells = [];
             for (let r = 0; r < data.revealed.length; r++) {
                 for (let c = 0; c < data.revealed[r].length; c++) {
-                    if (template[r][c] !== '-' && data.revealed[r][c] === 0) {
+                    if (!isEmptyCell(template[r][c]) && data.revealed[r][c] === 0) {
                         unrevealedCells.push([r, c]);
                     }
                 }
@@ -1111,6 +1115,14 @@
                     `${currentPuzzleType.toUpperCase()} Hudoku Puzzle`;
                 
                 container.appendChild(renderGrid(grid, template, title, !showingSolutions, data.solution));
+
+                if (!showingSolutions && data.revealedCount === data.totalCells) {
+                    setTimeout(() => {
+                        const scoreData = calculateScore();
+                        showScoreScreen(scoreData);
+                        saveScoreToLocalStorage(scoreData);
+                    }, 100);
+                }
             }
             
             updateStats();
