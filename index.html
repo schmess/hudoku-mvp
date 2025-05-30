@@ -393,14 +393,14 @@
             ['a', 'a', 'a', 'b', 'b'],
             ['a', 'a', 'a', 'b', 'b'],
             ['a', 'a', 'a', 'd', 'd'],
-            ['-', '-', '-', 'd', 'd']
+            ['-a', '-a', '-a', 'd', 'd']
         ];
         
         const template6x5 = [
             ['a', 'a', 'a', 'b', 'b'],
             ['a', 'a', 'a', 'b', 'b'],
-            ['a', 'a', 'a', '-', '-'],
-            ['c', 'c', 'c', '-', '-'],
+            ['a', 'a', 'a', '-a', '-a'],
+            ['c', 'c', 'c', '-c', '-c'],
             ['c', 'c', 'c', 'd', 'd'],
             ['c', 'c', 'c', 'd', 'd']
         ];
@@ -482,9 +482,38 @@
                     return [];
             }
         }
+
+        function getClueNumbersInRegion(grid, template, mask) {
+            const clueNumbers = new Set();
+            for (let r = 0; r < grid.length; r++) {
+                for (let c = 0; c < grid[r].length; c++) {
+                    if (template[r][c] === mask && typeof grid[r][c] === 'number' && grid[r][c] > 0) {
+                        clueNumbers.add(grid[r][c]);
+                    }
+                }
+            }
+            return Array.from(clueNumbers);
+        }
+        
+        function getClueNumbersInRegionRowCol(grid, template, mask, r, c) {
+            const clueNumbers = new Set();
+            // Check row
+            for (let col = 0; col < grid[r].length; col++) {
+                if (template[r][col] === mask && typeof grid[r][col] === 'number' && grid[r][col] > 0) {
+                    clueNumbers.add(grid[r][col]);
+                }
+            }
+            // Check column
+            for (let row = 0; row < grid.length; row++) {
+                if (template[row][c] === mask && typeof grid[row][c] === 'number' && grid[row][c] > 0) {
+                    clueNumbers.add(grid[row][c]);
+                }
+            }
+            return Array.from(clueNumbers);
+        }
         
         function solvePuzzle(template) {
-            const grid = template.map(row => row.map(cell => cell === '-' ? '-' : 0));
+            const grid = template.map(row => row.map(cell => cell?.[0] === '-' ? '-' : 0));
             
             function backtrack() {
                 for (let row = 0; row < grid.length; row++) {
@@ -595,6 +624,8 @@
             const gridEl = document.createElement('div');
             gridEl.className = 'grid';
             
+            // Track used numbers for empty cells per mask (for this render)
+            const usedEmptyNumbers = {};
             grid.forEach((row, r) => {
                 const rowEl = document.createElement('div');
                 rowEl.className = 'grid-row';
@@ -609,41 +640,27 @@
                     cellEl.setAttribute('data-col', c);
                     
                     const region = template[r][c];
-                    if (region === '-') {
+                    if (region[0] === '-') {
                         cellEl.className += ' empty';
-                        // Track used numbers for empty cells
-                        if (!window.usedEmptyNumbers) window.usedEmptyNumbers = new Set();
+                        // Get the mask for this empty cell
+                        const mask = region.slice(1); // e.g., for '-a', mask is 'a'
+                        if (!usedEmptyNumbers[mask]) usedEmptyNumbers[mask] = new Set();
                         let shown = false;
-                        // Get all clue numbers (revealed numbers) in the grid
-                        let clueNumbers = new Set();
-                        grid.forEach(rowArr => rowArr.forEach(val => {
-                            if (typeof val === 'number' && val > 0) clueNumbers.add(val);
-                        }));
-                        if (c <= 2) {
-                            // Check column for numbers 4-9
-                            const colNumbers = grid.map(rowArr => typeof rowArr[c] === 'number' && rowArr[c] > 0 ? rowArr[c] : null).filter(x => x !== null);
-                            for (let num = 4; num <= 9; num++) {
-                                if (!colNumbers.includes(num) && !window.usedEmptyNumbers.has(num) && !clueNumbers.has(num)) {
-                                    cellEl.textContent = num;
-                                    cellEl.style.fontSize = '0.9em';
-                                    cellEl.style.color = '#b7791f';
-                                    window.usedEmptyNumbers.add(num);
-                                    shown = true;
-                                    break;
-                                }
-                            }
-                        } else {
-                            // Check row for numbers 4-9
-                            const rowNumbers = row.filter(x => typeof x === 'number' && x > 0);
-                            for (let num = 4; num <= 9; num++) {
-                                if (!rowNumbers.includes(num) && !window.usedEmptyNumbers.has(num) && !clueNumbers.has(num)) {
-                                    cellEl.textContent = num;
-                                    cellEl.style.fontSize = '0.9em';
-                                    cellEl.style.color = '#b7791f';
-                                    window.usedEmptyNumbers.add(num);
-                                    shown = true;
-                                    break;
-                                }
+                        const clueNumbers = getClueNumbersInRegion(grid, template, mask);
+                        const rowColClueNumbers = getClueNumbersInRegionRowCol(grid, template, mask, r, c);
+                        // Try numbers above 4
+                        for (let num = 5; num <= 9; num++) {
+                            if (
+                                !clueNumbers.includes(num) &&
+                                !rowColClueNumbers.includes(num) &&
+                                !usedEmptyNumbers[mask].has(num)
+                            ) {
+                                cellEl.textContent = num;
+                                cellEl.style.fontSize = '0.9em';
+                                cellEl.style.color = '#b7791f';
+                                usedEmptyNumbers[mask].add(num);
+                                shown = true;
+                                break;
                             }
                         }
                         if (!shown) {
@@ -684,8 +701,6 @@
             });
             
             section.appendChild(gridEl);
-            // After section.appendChild(gridEl);
-            window.usedEmptyNumbers = undefined;
             return section;
         }
         
