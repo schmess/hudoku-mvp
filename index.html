@@ -329,7 +329,7 @@
         <p class="subtitle">Timed puzzle challenge with automatic hints and scoring system</p>
         
         <div class="controls">
-            <button onclick="startPuzzle('3x5')" id="start3x5">Start 3×5 Hudoku</button>
+            <button onclick="startPuzzle('4x5')" id="start4x5">Start 4×5 Hudoku</button>
             <button onclick="startPuzzle('6x5')" id="start6x5">Start 6×5 Hudoku</button>
             <button onclick="getHintAndResetTimer()" id="hintBtn" style="display: none;">Get a hint</button>
             <button onclick="showSolution()" id="solutionBtn" style="display: none;">Show Solution</button>
@@ -389,10 +389,11 @@
 
     <script>
         // Puzzle templates
-        const template3x5 = [
+        const template4x5 = [
             ['a', 'a', 'a', 'b', 'b'],
             ['a', 'a', 'a', 'b', 'b'],
-            ['a', 'a', 'a', '-', '-']
+            ['a', 'a', 'a', 'd', 'd'],
+            ['-', '-', '-', 'd', 'd']
         ];
         
         const template6x5 = [
@@ -581,7 +582,7 @@
                 }
                 
                 // Add other puzzle info
-                const otherPuzzle = currentPuzzleType === '3x5' ? '6x5' : '3x5';
+                const otherPuzzle = currentPuzzleType === '4x5' ? '6x5' : '4x5';
                 if (currentPuzzles[otherPuzzle]) {
                     const otherData = currentPuzzles[otherPuzzle];
                     const otherPercentage = Math.round((otherData.revealedCount / otherData.totalCells) * 100);
@@ -611,6 +612,23 @@
                     if (region === '-') {
                         cellEl.className += ' empty';
                         cellEl.textContent = '-';
+                        /*
+                        // Find the first number above 4 (5-9) that is NOT present in this row
+                        const rowNumbers = row.filter(x => typeof x === 'number' && x > 0);
+                        let shown = false;
+                        for (let num = 5; num <= 9; num++) {
+                            if (!rowNumbers.includes(num)) {
+                                cellEl.textContent = num;
+                                cellEl.style.fontSize = '0.9em';
+                                cellEl.style.color = '#b7791f';
+                                shown = true;
+                                break;
+                            }
+                        }
+                        if (!shown) {
+                            cellEl.textContent = '-';
+                        }
+                        */
                     } else {
                         cellEl.className += ` region-${region}`;
                         
@@ -703,7 +721,7 @@
         }
         
         function showNumberInput(puzzleType, row, col) {
-            const template = puzzleType === '3x5' ? template3x5 : template6x5;
+            const template = puzzleType === '4x5' ? template4x5 : template6x5;
             const region = template[row][col];
             const validNumbers = getValidNumbers(region);
             const data = currentPuzzles[puzzleType];
@@ -772,7 +790,7 @@
             }
             
             const data = currentPuzzles[currentPuzzleType];
-            const template = currentPuzzleType === '3x5' ? template3x5 : template6x5;
+            const template = currentPuzzleType === '4x5' ? template4x5 : template6x5;
             
             // Find all unrevealed cells in current puzzle
             const unrevealedCells = [];
@@ -920,7 +938,7 @@
             if (!selectedCell) return;
             const { puzzleType, row, col } = selectedCell;
             const data = currentPuzzles[puzzleType];
-            const template = puzzleType === '3x5' ? template3x5 : template6x5;
+            const template = puzzleType === '4x5' ? template4x5 : template6x5;
             const correctNumber = data.solution[row][col];
             const possibleNumbers = getValidNumbers(template[row][col]).filter(num => isValidPlacement(data.revealed, row, col, num, template));
             hideNumberInput();
@@ -958,8 +976,8 @@
         function startPuzzle(puzzleType) {
             // Only generate the selected puzzle
             let result = null;
-            if (puzzleType === '3x5') {
-                result = createPuzzle(template3x5);
+            if (puzzleType === '4x5') {
+                result = createPuzzle(template4x5);
             } else {
                 result = createPuzzle(template6x5);
             }
@@ -968,7 +986,7 @@
                 currentPuzzles[puzzleType] = result;
                 currentPuzzleType = puzzleType;
                 // Update button visibility
-                document.getElementById('start3x5').style.display = 'none';
+                document.getElementById('start4x5').style.display = 'none';
                 document.getElementById('start6x5').style.display = 'none';
                 document.getElementById('hintBtn').style.display = 'inline-block';
                 document.getElementById('solutionBtn').style.display = 'inline-block';
@@ -986,7 +1004,7 @@
             showingSolutions = false;
             
             // Reset button visibility
-            document.getElementById('start3x5').style.display = 'inline-block';
+            document.getElementById('start4x5').style.display = 'inline-block';
             document.getElementById('start6x5').style.display = 'inline-block';
             document.getElementById('hintBtn').style.display = 'none';
             document.getElementById('solutionBtn').style.display = 'none';
@@ -1009,7 +1027,7 @@
             }
             
             const data = currentPuzzles[currentPuzzleType];
-            const template = currentPuzzleType === '3x5' ? template3x5 : template6x5;
+            const template = currentPuzzleType === '4x5' ? template4x5 : template6x5;
             
             // Find all unrevealed cells in current puzzle
             const unrevealedCells = [];
@@ -1050,7 +1068,7 @@
             
             if (currentPuzzleType && currentPuzzles[currentPuzzleType]) {
                 const data = currentPuzzles[currentPuzzleType];
-                const template = currentPuzzleType === '3x5' ? template3x5 : template6x5;
+                const template = currentPuzzleType === '4x5' ? template4x5 : template6x5;
                 const grid = showingSolutions ? data.solution : data.revealed;
                 const title = showingSolutions ? 
                     `${currentPuzzleType.toUpperCase()} Solution` : 
@@ -1078,7 +1096,7 @@
                     statsText += ` • Wrong entries: ${gameStats.incorrectEntries}`;
                 }
                 
-                const otherPuzzle = currentPuzzleType === '3x5' ? '6x5' : '3x5';
+                const otherPuzzle = currentPuzzleType === '4x5' ? '6x5' : '4x5';
                 const otherData = currentPuzzles[otherPuzzle];
                 if (otherData) {
                     const otherPercentage = Math.round((otherData.revealedCount / otherData.totalCells) * 100);
