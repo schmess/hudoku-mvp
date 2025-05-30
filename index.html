@@ -859,10 +859,10 @@
             const seconds = scoreData.totalTime % 60;
             const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             let gradeText = '';
-            if (scoreData.finalScore >= 8000) gradeText = '🏆 MASTER';
-            else if (scoreData.finalScore >= 6000) gradeText = '🥇 EXPERT';
-            else if (scoreData.finalScore >= 4000) gradeText = '🥈 SKILLED';
-            else if (scoreData.finalScore >= 2000) gradeText = '🥉 NOVICE';
+            if (scoreData.finalScore >= 9000) gradeText = '🏆 MASTER';
+            else if (scoreData.finalScore >= 8250) gradeText = '🥇 EXPERT';
+            else if (scoreData.finalScore >= 7500) gradeText = '🥈 SKILLED';
+            else if (scoreData.finalScore >= 6500) gradeText = '🥉 NOVICE';
             else gradeText = '📚 LEARNING';
             scoreEl.innerHTML = `
                 <div class="score-title">🎉 Puzzle Complete! ${gradeText}</div>
