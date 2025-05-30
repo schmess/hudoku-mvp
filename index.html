@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Half Sudoku (Hudoku) Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .puzzles-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .puzzle-section {
+            text-align: center;
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        
+        .puzzle-title {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-weight: 600;
+        }
+        
+        .grid {
+            display: inline-block;
+            border: 3px solid #2d3748;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 10px;
+            background: white;
+        }
+        
+        .grid-row {
+            display: flex;
+        }
+        
+        .cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .cell:hover:not(.empty):not(.given) {
+            background: #edf2f7;
+            transform: scale(1.05);
+        }
+        
+        .cell.clickable {
+            cursor: pointer;
+            box-shadow: inset 0 0 0 2px transparent;
+        }
+        
+        .cell.clickable:hover {
+            box-shadow: inset 0 0 0 2px #4299e1;
+        }
+        
+        .cell.wrong {
+            background-color: #fed7d7 !important;
+            color: #e53e3e;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .cell.given {
+            background-color: rgba(0,0,0,0.05);
+            font-weight: 900;
+            cursor: default;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+        }
+        
+        .input-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+        }
+        
+        .input-popup h3 {
+            margin-top: 0;
+            color: #2d3748;
+        }
+        
+        .number-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .number-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .number-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .timer-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .timer-warning {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24) !important;
+            animation: pulse 1s infinite;
+        }
+        
+        .timer-critical {
+            background: linear-gradient(45deg, #e74c3c, #c0392b) !important;
+            animation: pulse 0.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .score-display {
+            background: #f0f8ff;
+            border: 2px solid #4a90e2;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .score-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .score-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .score-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .score-label {
+            font-weight: bold;
+            color: #34495e;
+            font-size: 0.9em;
+        }
+        
+        .score-value {
+            font-size: 1.2em;
+            color: #2980b9;
+            margin-top: 5px;
+        }
+        
+        .region-a { background-color: #bee3f8; }
+        .region-b { background-color: #fbb6ce; }
+        .region-c { background-color: #c6f6d5; }
+        .region-d { background-color: #fed7aa; }
+        .empty { background-color: #f7fafc; color: #a0aec0; }
+        
+        .rules {
+            margin-top: 30px;
+            background: #f0fff4;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #38a169;
+        }
+        
+        .rules h3 {
+            color: #2f855a;
+            margin-top: 0;
+        }
+        
+        .rules ul {
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            text-align: center;
+            color: #4a5568;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Half Sudoku Generator</h1>
+        <p class="subtitle">Timed puzzle challenge with automatic hints and scoring system</p>
+        
+        <div class="controls">
+            <button onclick="startPuzzle('3x5')" id="start3x5">Start 3×5 Hudoku</button>
+            <button onclick="startPuzzle('6x5')" id="start6x5">Start 6×5 Hudoku</button>
+            <button onclick="switchPuzzle()" id="switchBtn" style="display: none;">Switch Puzzle</button>
+            <button onclick="showSolution()" id="solutionBtn" style="display: none;">Show Solution</button>
+            <button onclick="resetGame()" id="resetBtn" style="display: none;">New Game</button>
+        </div>
+        
+        <div id="timerContainer" style="display: none;">
+            <div class="timer-display" id="timerDisplay">
+                ⏰ Time Remaining: <span id="timerValue">15</span>s
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color region-a"></div>
+                <span>Region A (1-9)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color region-b"></div>
+                <span>Region B (1-4)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color region-c"></div>
+                <span>Region C (1-9)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color region-d"></div>
+                <span>Region D (1-4)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color empty"></div>
+                <span>Empty cells</span>
+            </div>
+        </div>
+        
+        <div class="puzzles-container" id="puzzlesContainer">
+            <!-- Puzzles will be generated here -->
+        </div>
+        
+        <div class="stats" id="stats"></div>
+        
+        <div class="rules">
+            <h3>🧩 Hudoku Rules</h3>
+            <ul>
+                <li><strong>How to Play:</strong> Click on any '?' cell to enter a number</li>
+                <li><strong>Timer System:</strong> You start with 15 seconds. Each correct answer adds 15 seconds!</li>
+                <li><strong>Auto-Hints:</strong> When timer reaches 0, a hint is automatically generated (counts as a lapse)</li>
+                <li><strong>No Repeats:</strong> No number appears twice in any row, column, or lettered region</li>
+                <li><strong>Region A & C:</strong> Use numbers 1-9 (3×3 grids, 2 numbers revealed initially)</li>
+                <li><strong>Region B & D:</strong> Use numbers 1-4 (2×2 grids, 1 number revealed initially)</li>
+                <li><strong>Wrong Answer:</strong> Incorrect entries turn red and disappear after 1.5 seconds</li>
+                <li><strong>Scoring:</strong> Fast solving = higher score. Auto-hints and wrong answers = penalties!</li>
+                <li><strong>Goal:</strong> Complete both puzzles with the highest score possible!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Puzzle templates
+        const template3x5 = [
+            ['a', 'a', 'a', 'b', 'b'],
+            ['a', 'a', 'a', 'b', 'b'],
+            ['a', 'a', 'a', '-', '-']
+        ];
+        
+        const template6x5 = [
+            ['a', 'a', 'a', 'b', 'b'],
+            ['a', 'a', 'a', 'b', 'b'],
+            ['a', 'a', 'a', '-', '-'],
+            ['c', 'c', 'c', '-', '-'],
+            ['c', 'c', 'c', 'd', 'd'],
+            ['c', 'c', 'c', 'd', 'd']
+        ];
+        
+        let currentPuzzles = {};
+        let revealedNumbers = {}; // Track which numbers are revealed
+        let showingSolutions = false;
+        let selectedCell = null; // Track currently selected cell for input
+        let currentPuzzleType = null; // Track which puzzle is currently being shown
+        
+        // Timer and scoring system
+        let gameTimer = 15; // Current timer value in seconds
+        let gameStartTime = null; // When the game started
+        let timerInterval = null; // Timer interval reference
+        let gameStats = {
+            lapses: 0,        // Number of times timer ran out
+            incorrectEntries: 0, // Number of wrong answers
+            totalTime: 0      // Total game time in seconds
+        };
+        
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        
+        function isValidPlacement(grid, row, col, num, template) {
+            // Check row constraint
+            for (let c = 0; c < grid[row].length; c++) {
+                if (c !== col && grid[row][c] === num) return false;
+            }
+            
+            // Check column constraint
+            for (let r = 0; r < grid.length; r++) {
+                if (r !== row && grid[r][col] === num) return false;
+            }
+            
+            // Check region constraint
+            const region = template[row][col];
+            if (region === '-') return true;
+            
+            for (let r = 0; r < template.length; r++) {
+                for (let c = 0; c < template[r].length; c++) {
+                    if (template[r][c] === region && !(r === row && c === col)) {
+                        if (grid[r][c] === num) return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
+        
+        function getValidNumbers(region) {
+            switch (region) {
+                case 'a':
+                case 'c':
+                    return [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                case 'b':
+                case 'd':
+                    return [1, 2, 3, 4];
+                default:
+                    return [];
+            }
+        }
+        
+        function solvePuzzle(template) {
+            const grid = template.map(row => row.map(cell => cell === '-' ? '-' : 0));
+            
+            function backtrack() {
+                for (let row = 0; row < grid.length; row++) {
+                    for (let col = 0; col < grid[row].length; col++) {
+                        if (grid[row][col] === 0) {
+                            const region = template[row][col];
+                            const validNums = shuffle(getValidNumbers(region));
+                            
+                            for (const num of validNums) {
+                                if (isValidPlacement(grid, row, col, num, template)) {
+                                    grid[row][col] = num;
+                                    if (backtrack()) return true;
+                                    grid[row][col] = 0;
+                                }
+                            }
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            
+            if (backtrack()) {
+                return grid;
+            }
+            return null;
+        }
+        
+        function createPuzzle(template) {
+            const solution = solvePuzzle(template);
+            if (!solution) return null;
+            
+            // Create revealed grid - initially all zeros (hidden)
+            const revealed = template.map(row => row.map(cell => cell === '-' ? '-' : 0));
+            
+            // Get cells for each region
+            const regionCells = {};
+            for (let r = 0; r < template.length; r++) {
+                for (let c = 0; c < template[r].length; c++) {
+                    const region = template[r][c];
+                    if (region !== '-') {
+                        if (!regionCells[region]) regionCells[region] = [];
+                        regionCells[region].push([r, c]);
+                    }
+                }
+            }
+            
+            let totalRevealed = 0;
+            
+            // Reveal numbers per region based on size:
+            // Regions A & C (3x3, numbers 1-9): reveal 2 numbers each
+            // Regions B & D (2x2, numbers 1-4): reveal 1 number each
+            Object.keys(regionCells).forEach(region => {
+                const cells = regionCells[region];
+                const numbersToReveal = (region === 'a' || region === 'c') ? 2 : 1;
+                
+                // Randomly select cells to reveal in this region
+                const shuffledCells = shuffle(cells);
+                for (let i = 0; i < Math.min(numbersToReveal, cells.length); i++) {
+                    const [r, c] = shuffledCells[i];
+                    revealed[r][c] = solution[r][c];
+                    totalRevealed++;
+                }
+            });
+            
+            // Count total fillable cells
+            const totalCells = Object.values(regionCells).flat().length;
+            
+            return { 
+                solution, 
+                revealed, 
+                totalCells,
+                revealedCount: totalRevealed,
+                hintsUsed: 0
+            };
+        }
+        
+        function renderGrid(grid, template, title, isPuzzle = true) {
+            const section = document.createElement('div');
+            section.className = 'puzzle-section';
+            
+            const titleEl = document.createElement('div');
+            titleEl.className = 'puzzle-title';
+            titleEl.textContent = title;
+            section.appendChild(titleEl);
+            
+            // Add progress and switch info for puzzles
+            if (isPuzzle && currentPuzzleType) {
+                const data = currentPuzzles[currentPuzzleType];
+                const percentage = Math.round((data.revealedCount / data.totalCells) * 100);
+                const progressEl = document.createElement('div');
+                progressEl.style.cssText = 'font-size: 0.9em; color: #666; margin-bottom: 10px; font-weight: normal;';
+                progressEl.textContent = `${data.revealedCount}/${data.totalCells} revealed (${percentage}%)`;
+                if (data.hintsUsed > 0) {
+                    progressEl.textContent += ` • ${data.hintsUsed} hints used`;
+                }
+                
+                // Add other puzzle info
+                const otherPuzzle = currentPuzzleType === '3x5' ? '6x5' : '3x5';
+                if (currentPuzzles[otherPuzzle]) {
+                    const otherData = currentPuzzles[otherPuzzle];
+                    const otherPercentage = Math.round((otherData.revealedCount / otherData.totalCells) * 100);
+                    progressEl.textContent += ` • ${otherPuzzle.toUpperCase()}: ${otherPercentage}% complete`;
+                }
+                
+                section.appendChild(progressEl);
+            }
+            
+            const gridEl = document.createElement('div');
+            gridEl.className = 'grid';
+            
+            grid.forEach((row, r) => {
+                const rowEl = document.createElement('div');
+                rowEl.className = 'grid-row';
+                
+                row.forEach((cell, c) => {
+                    const cellEl = document.createElement('div');
+                    cellEl.className = 'cell';
+                    
+                    // Add data attributes for cell identification
+                    cellEl.setAttribute('data-puzzle', currentPuzzleType);
+                    cellEl.setAttribute('data-row', r);
+                    cellEl.setAttribute('data-col', c);
+                    
+                    const region = template[r][c];
+                    if (region === '-') {
+                        cellEl.className += ' empty';
+                        cellEl.textContent = '-';
+                    } else {
+                        cellEl.className += ` region-${region}`;
+                        
+                        if (cell === 0 && isPuzzle) {
+                            // Empty cell that can be clicked
+                            cellEl.textContent = '?';
+                            cellEl.style.color = '#a0aec0';
+                            cellEl.className += ' clickable';
+                            cellEl.onclick = () => showNumberInput(currentPuzzleType, r, c);
+                        } else {
+                            // Cell with a number
+                            cellEl.textContent = cell;
+                            if (isPuzzle) {
+                                // Check if this is a given number or user-revealed
+                                const data = currentPuzzles[currentPuzzleType];
+                                if (data) {
+                                    // If this was revealed initially (not from hints), mark as given
+                                    const wasInitiallyRevealed = data.hintsUsed === 0 || 
+                                        (data.revealed[r][c] !== 0 && data.revealed[r][c] === data.solution[r][c]);
+                                    if (wasInitiallyRevealed) {
+                                        cellEl.className += ' given';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    rowEl.appendChild(cellEl);
+                });
+                
+                gridEl.appendChild(rowEl);
+            });
+            
+            section.appendChild(gridEl);
+            return section;
+        }
+        
+        function startTimer() {
+            gameStartTime = Date.now();
+            gameTimer = 15;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                gameTimer--;
+                updateTimerDisplay();
+                
+                if (gameTimer <= 0) {
+                    // Timer expired - generate auto hint
+                    autoHint();
+                }
+            }, 1000);
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        function addTimeBonus() {
+            gameTimer += 15; // Add 15 seconds for correct answer
+            updateTimerDisplay();
+        }
+        
+        function updateTimerDisplay() {
+            const timerValueEl = document.getElementById('timerValue');
+            const timerDisplayEl = document.getElementById('timerDisplay');
+            
+            if (timerValueEl && timerDisplayEl) {
+                timerValueEl.textContent = Math.max(0, gameTimer);
+                
+                // Update timer styling based on remaining time
+                timerDisplayEl.className = 'timer-display';
+                if (gameTimer <= 5) {
+                    timerDisplayEl.className += ' timer-critical';
+                } else if (gameTimer <= 10) {
+                    timerDisplayEl.className += ' timer-warning';
+                }
+            }
+        }
+        
+        function showNumberInput(puzzleType, row, col) {
+            const template = puzzleType === '3x5' ? template3x5 : template6x5;
+            const region = template[row][col];
+            const validNumbers = getValidNumbers(region);
+            
+            selectedCell = { puzzleType, row, col };
+            
+            // Create popup overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.onclick = hideNumberInput;
+            
+            // Create popup
+            const popup = document.createElement('div');
+            popup.className = 'input-popup';
+            
+            const title = document.createElement('h3');
+            title.textContent = `Enter number for Region ${region.toUpperCase()}`;
+            popup.appendChild(title);
+            
+            const subtitle = document.createElement('p');
+            subtitle.textContent = `Valid numbers: ${validNumbers.join(', ')}`;
+            subtitle.style.color = '#666';
+            subtitle.style.margin = '0 0 15px 0';
+            popup.appendChild(subtitle);
+            
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'number-buttons';
+            
+            // Create number buttons
+            validNumbers.forEach(num => {
+                const button = document.createElement('button');
+                button.className = 'number-btn';
+                button.textContent = num;
+                button.onclick = () => handleNumberInput(num);
+                buttonContainer.appendChild(button);
+            });
+            
+            popup.appendChild(buttonContainer);
+            
+            // Add cancel button
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 5px; cursor: pointer;';
+            cancelBtn.onclick = hideNumberInput;
+            popup.appendChild(cancelBtn);
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(popup);
+        }
+        
+        function hideNumberInput() {
+            const overlay = document.querySelector('.popup-overlay');
+            const popup = document.querySelector('.input-popup');
+            if (overlay) overlay.remove();
+            if (popup) popup.remove();
+            selectedCell = null;
+        }
+        
+        function autoHint() {
+            if (!currentPuzzleType || !currentPuzzles[currentPuzzleType]) {
+                return;
+            }
+            
+            const data = currentPuzzles[currentPuzzleType];
+            const template = currentPuzzleType === '3x5' ? template3x5 : template6x5;
+            
+            // Find all unrevealed cells in current puzzle
+            const unrevealedCells = [];
+            for (let r = 0; r < data.revealed.length; r++) {
+                for (let c = 0; c < data.revealed[r].length; c++) {
+                    if (template[r][c] !== '-' && data.revealed[r][c] === 0) {
+                        unrevealedCells.push([r, c]);
+                    }
+                }
+            }
+            
+            if (unrevealedCells.length === 0) {
+                // Puzzle complete, stop timer
+                stopTimer();
+                return;
+            }
+            
+            // Randomly reveal one unrevealed cell
+            const randomIndex = Math.floor(Math.random() * unrevealedCells.length);
+            const [r, c] = unrevealedCells[randomIndex];
+            
+            data.revealed[r][c] = data.solution[r][c];
+            data.revealedCount++;
+            data.hintsUsed++;
+            gameStats.lapses++;
+            
+            // Reset timer after auto hint
+            gameTimer = 15;
+            updateTimerDisplay();
+            updateDisplay();
+            
+            // Flash a message
+            showAutoHintMessage();
+        }
+        
+        function showAutoHintMessage() {
+            const timerDisplayEl = document.getElementById('timerDisplay');
+            const originalText = timerDisplayEl.innerHTML;
+            
+            timerDisplayEl.innerHTML = '💡 Auto-Hint Generated! +15s';
+            timerDisplayEl.style.background = 'linear-gradient(45deg, #f39c12, #e67e22)';
+            
+            setTimeout(() => {
+                timerDisplayEl.innerHTML = originalText;
+                updateTimerDisplay(); // This will restore proper styling
+            }, 2000);
+        }
+        
+        function calculateScore() {
+            const totalTimeSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
+            const baseScore = 10000; // Base score
+            
+            // Time penalty: -10 points per second
+            const timePenalty = totalTimeSeconds * 10;
+            
+            // Lapse penalty: -500 points per auto-hint
+            const lapsePenalty = gameStats.lapses * 500;
+            
+            // Incorrect entry penalty: -100 points per wrong answer
+            const incorrectPenalty = gameStats.incorrectEntries * 100;
+            
+            const finalScore = Math.max(0, baseScore - timePenalty - lapsePenalty - incorrectPenalty);
+            
+            return {
+                finalScore,
+                totalTime: totalTimeSeconds,
+                lapses: gameStats.lapses,
+                incorrectEntries: gameStats.incorrectEntries,
+                timePenalty,
+                lapsePenalty,
+                incorrectPenalty
+            };
+        }
+        
+        function showScoreScreen(scoreData) {
+            stopTimer();
+            
+            const container = document.getElementById('puzzlesContainer');
+            const scoreEl = document.createElement('div');
+            scoreEl.className = 'score-display';
+            
+            const minutes = Math.floor(scoreData.totalTime / 60);
+            const seconds = scoreData.totalTime % 60;
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            let gradeText = '';
+            if (scoreData.finalScore >= 8000) gradeText = '🏆 MASTER';
+            else if (scoreData.finalScore >= 6000) gradeText = '🥇 EXPERT';
+            else if (scoreData.finalScore >= 4000) gradeText = '🥈 SKILLED';
+            else if (scoreData.finalScore >= 2000) gradeText = '🥉 NOVICE';
+            else gradeText = '📚 LEARNING';
+            
+            scoreEl.innerHTML = `
+                <div class="score-title">🎉 Puzzle Complete! ${gradeText}</div>
+                <div style="font-size: 2em; color: #e74c3c; margin: 10px 0; font-weight: bold;">
+                    Score: ${scoreData.finalScore}
+                </div>
+                <div class="score-details">
+                    <div class="score-item">
+                        <div class="score-label">Total Time</div>
+                        <div class="score-value">${timeString}</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Auto-Hints</div>
+                        <div class="score-value">${scoreData.lapses}</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Wrong Entries</div>
+                        <div class="score-value">${scoreData.incorrectEntries}</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Time Penalty</div>
+                        <div class="score-value">-${scoreData.timePenalty}</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Hint Penalty</div>
+                        <div class="score-value">-${scoreData.lapsePenalty}</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Error Penalty</div>
+                        <div class="score-value">-${scoreData.incorrectPenalty}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; color: #7f8c8d; font-style: italic;">
+                    💡 Faster solving, fewer auto-hints, and fewer mistakes = higher score!
+                </div>
+            `;
+            
+            container.appendChild(scoreEl);
+        }
+        
+        function hideNumberInput() {
+            const overlay = document.querySelector('.popup-overlay');
+            const popup = document.querySelector('.input-popup');
+            if (overlay) overlay.remove();
+            if (popup) popup.remove();
+            selectedCell = null;
+        }
+        
+        function handleNumberInput(number) {
+            if (!selectedCell) return;
+            
+            const { puzzleType, row, col } = selectedCell;
+            const data = currentPuzzles[puzzleType];
+            const correctNumber = data.solution[row][col];
+            
+            hideNumberInput();
+            
+            if (number === correctNumber) {
+                // Correct answer
+                data.revealed[row][col] = number;
+                data.revealedCount++;
+                updateDisplay();
+                
+                // Check if puzzle is complete
+                if (data.revealedCount === data.totalCells) {
+                    setTimeout(() => {
+                        const otherPuzzle = puzzleType === '3x5' ? '6x5' : '3x5';
+                        const otherData = currentPuzzles[otherPuzzle];
+                        const otherComplete = otherData && otherData.revealedCount === otherData.totalCells;
+                        
+                        if (otherComplete) {
+                            alert(`🎉 Amazing! You completed BOTH puzzles! You're a Hudoku master!`);
+                        } else {
+                            alert(`🎉 Congratulations! You completed the ${puzzleType.toUpperCase()} puzzle!\n\nTry the ${otherPuzzle.toUpperCase()} puzzle next, or start a new game!`);
+                        }
+                    }, 100);
+                }
+            } else {
+                // Wrong answer - show red and remove with delay
+                const cellElement = document.querySelector(`[data-puzzle="${puzzleType}"][data-row="${row}"][data-col="${col}"]`);
+                if (cellElement) {
+                    cellElement.textContent = number;
+                    cellElement.classList.add('wrong');
+                    
+                    setTimeout(() => {
+                        cellElement.textContent = '?';
+                        cellElement.classList.remove('wrong');
+                    }, 1500);
+                }
+            }
+        }
+        
+        function startPuzzle(puzzleType) {
+            // Generate both puzzles but show only the selected one
+            const result3x5 = createPuzzle(template3x5);
+            const result6x5 = createPuzzle(template6x5);
+            
+            if (result3x5 && result6x5) {
+                currentPuzzles['3x5'] = result3x5;
+                currentPuzzles['6x5'] = result6x5;
+                currentPuzzleType = puzzleType;
+                
+                // Update button visibility
+                document.getElementById('start3x5').style.display = 'none';
+                document.getElementById('start6x5').style.display = 'none';
+                document.getElementById('switchBtn').style.display = 'inline-block';
+                document.getElementById('solutionBtn').style.display = 'inline-block';
+                document.getElementById('resetBtn').style.display = 'inline-block';
+                
+                updateDisplay();
+            }
+        }
+        
+        function switchPuzzle() {
+            if (currentPuzzleType === '3x5') {
+                currentPuzzleType = '6x5';
+            } else {
+                currentPuzzleType = '3x5';
+            }
+            updateDisplay();
+        }
+        
+        function resetGame() {
+            currentPuzzles = {};
+            currentPuzzleType = null;
+            showingSolutions = false;
+            
+            // Reset button visibility
+            document.getElementById('start3x5').style.display = 'inline-block';
+            document.getElementById('start6x5').style.display = 'inline-block';
+            document.getElementById('switchBtn').style.display = 'none';
+            document.getElementById('solutionBtn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            
+            // Reset solution button text
+            document.getElementById('solutionBtn').textContent = 'Show Solution';
+            
+            updateDisplay();
+        }
+        
+        function getHint() {
+            if (!currentPuzzleType || !currentPuzzles[currentPuzzleType]) {
+                alert('Start a puzzle first!');
+                return;
+            }
+            
+            const data = currentPuzzles[currentPuzzleType];
+            const template = currentPuzzleType === '3x5' ? template3x5 : template6x5;
+            
+            // Find all unrevealed cells in current puzzle
+            const unrevealedCells = [];
+            for (let r = 0; r < data.revealed.length; r++) {
+                for (let c = 0; c < data.revealed[r].length; c++) {
+                    if (template[r][c] !== '-' && data.revealed[r][c] === 0) {
+                        unrevealedCells.push([r, c]);
+                    }
+                }
+            }
+            
+            if (unrevealedCells.length === 0) {
+                alert('This puzzle is already complete!');
+                return;
+            }
+            
+            // Randomly reveal one unrevealed cell
+            const randomIndex = Math.floor(Math.random() * unrevealedCells.length);
+            const [r, c] = unrevealedCells[randomIndex];
+            
+            data.revealed[r][c] = data.solution[r][c];
+            data.revealedCount++;
+            data.hintsUsed++;
+            
+            updateDisplay();
+        }
+        
+        function showSolution() {
+            showingSolutions = !showingSolutions;
+            updateDisplay();
+            document.getElementById('solutionBtn').textContent = 
+                showingSolutions ? 'Show Puzzle' : 'Show Solution';
+        }
+        
+        function updateDisplay() {
+            const container = document.getElementById('puzzlesContainer');
+            container.innerHTML = '';
+            
+            if (currentPuzzleType && currentPuzzles[currentPuzzleType]) {
+                const data = currentPuzzles[currentPuzzleType];
+                const template = currentPuzzleType === '3x5' ? template3x5 : template6x5;
+                const grid = showingSolutions ? data.solution : data.revealed;
+                const title = showingSolutions ? 
+                    `${currentPuzzleType.toUpperCase()} Solution` : 
+                    `${currentPuzzleType.toUpperCase()} Hudoku Puzzle`;
+                
+                container.appendChild(renderGrid(grid, template, title, !showingSolutions));
+            }
+            
+            updateStats();
+        }
+        
+        function updateStats() {
+            const statsEl = document.getElementById('stats');
+            
+            if (currentPuzzleType && currentPuzzles[currentPuzzleType]) {
+                const data = currentPuzzles[currentPuzzleType];
+                const percentage = Math.round((data.revealedCount / data.totalCells) * 100);
+                let statsText = `${currentPuzzleType.toUpperCase()}: ${data.revealedCount}/${data.totalCells} revealed (${percentage}%)`;
+                
+                if (data.hintsUsed > 0) {
+                    statsText += ` • Auto-hints: ${data.hintsUsed}`;
+                }
+                
+                if (gameStats.incorrectEntries > 0) {
+                    statsText += ` • Wrong entries: ${gameStats.incorrectEntries}`;
+                }
+                
+                const otherPuzzle = currentPuzzleType === '3x5' ? '6x5' : '3x5';
+                const otherData = currentPuzzles[otherPuzzle];
+                if (otherData) {
+                    const otherPercentage = Math.round((otherData.revealedCount / otherData.totalCells) * 100);
+                    statsText += ` | ${otherPuzzle.toUpperCase()}: ${otherPercentage}% complete`;
+                }
+                
+                if (showingSolutions) {
+                    statsText += ' | Showing solution';
+                } else if (percentage === 100) {
+                    statsText += ' | 🎉 COMPLETED!';
+                } else {
+                    statsText += ' | Click cells to play!';
+                }
+                
+                statsEl.textContent = statsText;
+            } else {
+                statsEl.textContent = 'Choose a puzzle size to start your timed Hudoku challenge!';
+            }
+        }
+        
+        // Initialize the interface
+        updateStats();
+        
+        // Add keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideNumberInput();
+            }
+        });
+    </script>
+</body>
+</html>
