@@ -482,33 +482,33 @@
             }
         }
 
-        function getClueNumbersInRegion(grid, template, mask) {
-            const clueNumbers = new Set();
+        function getUnviableCluesInRegion(grid, template, mask) {
+            const unviableClues = new Set();
             for (let r = 0; r < grid.length; r++) {
                 for (let c = 0; c < grid[r].length; c++) {
                     if (template[r][c] === mask && typeof grid[r][c] === 'number' && grid[r][c] > 0) {
-                        clueNumbers.add(grid[r][c]);
+                        unviableClues.add(grid[r][c]);
                     }
                 }
             }
-            return Array.from(clueNumbers);
+            return Array.from(unviableClues);
         }
         
-        function getClueNumbersInRegionRowCol(grid, template, mask, r, c) {
-            const clueNumbers = new Set();
+        function getUnviableCluesInRegionRowCol(grid, template, mask, r, c) {
+            const unviableClues = new Set();
             // Check row
             for (let col = 0; col < grid[r].length; col++) {
                 if (template[r][col] === mask && typeof grid[r][col] === 'number' && grid[r][col] > 0) {
-                    clueNumbers.add(grid[r][col]);
+                    unviableClues.add(grid[r][col]);
                 }
             }
             // Check column
             for (let row = 0; row < grid.length; row++) {
                 if (template[row][c] === mask && typeof grid[row][c] === 'number' && grid[row][c] > 0) {
-                    clueNumbers.add(grid[row][c]);
+                    unviableClues.add(grid[row][c]);
                 }
             }
-            return Array.from(clueNumbers);
+            return Array.from(unviableClues);
         }
         
         function solvePuzzle(template) {
@@ -589,7 +589,7 @@
             };
         }
         
-        function renderGrid(grid, template, title, isPuzzle = true) {
+        function renderGrid(grid, template, title, isPuzzle, solution) {
             const section = document.createElement('div');
             section.className = 'puzzle-section';
             
@@ -645,13 +645,13 @@
                         const mask = region.slice(1); // e.g., for '-a', mask is 'a'
                         if (!usedEmptyNumbers[mask]) usedEmptyNumbers[mask] = new Set();
                         let shown = false;
-                        const clueNumbers = getClueNumbersInRegion(grid, template, mask);
-                        const rowColClueNumbers = getClueNumbersInRegionRowCol(grid, template, mask, r, c);
+                        const unviableSetFromExistingClues = getUnviableCluesInRegion(grid, template, mask);
+                        const unviableSetFromRowColSolution = getUnviableCluesInRegionRowCol(solution, template, mask, r, c);
                         // Try numbers above 4
                         for (let num = 5; num <= 9; num++) {
                             if (
-                                !clueNumbers.includes(num) &&
-                                !rowColClueNumbers.includes(num) &&
+                                !unviableSetFromExistingClues.includes(num) &&
+                                !unviableSetFromRowColSolution.includes(num) &&
                                 !usedEmptyNumbers[mask].has(num)
                             ) {
                                 cellEl.textContent = num;
@@ -1110,7 +1110,7 @@
                     `${currentPuzzleType.toUpperCase()} Solution` : 
                     `${currentPuzzleType.toUpperCase()} Hudoku Puzzle`;
                 
-                container.appendChild(renderGrid(grid, template, title, !showingSolutions));
+                container.appendChild(renderGrid(grid, template, title, !showingSolutions, data.solution));
             }
             
             updateStats();
