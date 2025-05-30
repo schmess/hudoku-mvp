@@ -207,6 +207,7 @@
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .timer-warning {
@@ -414,6 +415,7 @@
         let gameTimer = 15; // Current timer value in seconds
         let gameStartTime = null; // When the game started
         let timerInterval = null; // Timer interval reference
+        let timerPaused = false; // Track if timer is paused
         let gameStats = {
             lapses: 0,        // Number of times timer ran out
             incorrectEntries: 0, // Number of wrong answers
@@ -520,11 +522,11 @@
             let totalRevealed = 0;
             
             // Reveal numbers per region based on size:
-            // Regions A & C (3x3, numbers 1-9): reveal 4 numbers each
-            // Regions B & D (2x2, numbers 1-4): reveal 2 numbers each
+            // Regions A & C (3x3, numbers 1-9): reveal 2 numbers each
+            // Regions B & D (2x2, numbers 1-4): reveal 1 number each
             Object.keys(regionCells).forEach(region => {
                 const cells = regionCells[region];
-                const numbersToReveal = (region === 'a' || region === 'c') ? 4 : 2;
+                const numbersToReveal = (region === 'a' || region === 'c') ? 2 : 1;
                 
                 // Randomly select cells to reveal in this region
                 const shuffledCells = shuffle(cells);
@@ -639,14 +641,16 @@
             gameStartTime = Date.now();
             gameTimer = 15;
             updateTimerDisplay();
-            
+            timerPaused = false;
+            if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
-                gameTimer--;
-                updateTimerDisplay();
-                
-                if (gameTimer <= 0) {
-                    // Timer expired - generate auto hint
-                    autoHint();
+                if (!timerPaused) {
+                    gameTimer--;
+                    updateTimerDisplay();
+                    if (gameTimer <= 0) {
+                        // Timer expired - generate auto hint
+                        autoHint();
+                    }
                 }
             }, 1000);
         }
@@ -664,19 +668,25 @@
         }
         
         function updateTimerDisplay() {
-            const timerValueEl = document.getElementById('timerValue');
             const timerDisplayEl = document.getElementById('timerDisplay');
-            
-            if (timerValueEl && timerDisplayEl) {
-                timerValueEl.textContent = Math.max(0, gameTimer);
-                
+            if (timerDisplayEl) {
+                if (timerPaused) {
+                    timerDisplayEl.innerHTML = '⏸️ Paused';
+                    timerDisplayEl.style.opacity = '0.6';
+                } else {
+                    timerDisplayEl.innerHTML = '⏰ Time Remaining: <span id="timerValue">' + Math.max(0, gameTimer) + '</span>s';
+                    timerDisplayEl.style.opacity = '1';
+                }
                 // Update timer styling based on remaining time
                 timerDisplayEl.className = 'timer-display';
-                if (gameTimer <= 5) {
-                    timerDisplayEl.className += ' timer-critical';
-                } else if (gameTimer <= 10) {
-                    timerDisplayEl.className += ' timer-warning';
+                if (!timerPaused) {
+                    if (gameTimer <= 5) {
+                        timerDisplayEl.className += ' timer-critical';
+                    } else if (gameTimer <= 10) {
+                        timerDisplayEl.className += ' timer-warning';
+                    }
                 }
+                timerDisplayEl.style.cursor = 'pointer';
             }
         }
         
@@ -877,14 +887,6 @@
             container.appendChild(scoreEl);
         }
         
-        function hideNumberInput() {
-            const overlay = document.querySelector('.popup-overlay');
-            const popup = document.querySelector('.input-popup');
-            if (overlay) overlay.remove();
-            if (popup) popup.remove();
-            selectedCell = null;
-        }
-        
         function handleNumberInput(number) {
             if (!selectedCell) return;
             
@@ -898,6 +900,9 @@
                 // Correct answer
                 data.revealed[row][col] = number;
                 data.revealedCount++;
+                // Reset timer to initial value
+                gameTimer = 15;
+                updateTimerDisplay();
                 updateDisplay();
                 
                 // Check if puzzle is complete
@@ -946,6 +951,10 @@
                 document.getElementById('solutionBtn').style.display = 'inline-block';
                 document.getElementById('resetBtn').style.display = 'inline-block';
                 
+                // Show timer and start it
+                document.getElementById('timerContainer').style.display = 'block';
+                startTimer();
+                
                 updateDisplay();
             }
         }
@@ -973,6 +982,10 @@
             
             // Reset solution button text
             document.getElementById('solutionBtn').textContent = 'Show Solution';
+            
+            // Hide timer and stop it
+            document.getElementById('timerContainer').style.display = 'none';
+            stopTimer();
             
             updateDisplay();
         }
@@ -1081,6 +1094,16 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 hideNumberInput();
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const timerDisplayEl = document.getElementById('timerDisplay');
+            if (timerDisplayEl) {
+                timerDisplayEl.addEventListener('click', function() {
+                    timerPaused = !timerPaused;
+                    updateTimerDisplay();
+                });
             }
         });
     </script>
