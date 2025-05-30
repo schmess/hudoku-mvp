@@ -913,10 +913,10 @@
             const data = currentPuzzles[puzzleType];
             const correctNumber = data.solution[row][col];
             hideNumberInput();
+            gameTimer = 15;
             if (number === correctNumber) {
                 data.revealed[row][col] = number;
                 data.revealedCount++;
-                gameTimer = 15;
                 updateTimerDisplay();
                 updateDisplay();
                 // Check if puzzle is complete
