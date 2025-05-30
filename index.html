@@ -212,12 +212,11 @@
         
         .timer-warning {
             background: linear-gradient(45deg, #ff6b6b, #ee5a24) !important;
-            animation: pulse 1s infinite;
         }
         
         .timer-critical {
             background: linear-gradient(45deg, #e74c3c, #c0392b) !important;
-            animation: pulse 0.5s infinite;
+            animation: pulse 1s infinite;
         }
         
         @keyframes pulse {
@@ -429,6 +428,9 @@
             d: 2  // 2x2 region
         };
         
+        // Track the last hovered or clicked cell for hint targeting
+        let lastActiveCell = null;
+        
         function shuffle(array) {
             const arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -615,6 +617,7 @@
                             cellEl.style.color = '#a0aec0';
                             cellEl.className += ' clickable';
                             cellEl.onclick = () => showNumberInput(currentPuzzleType, r, c);
+                            cellEl.onmouseenter = () => { lastActiveCell = { puzzleType: currentPuzzleType, row: r, col: c }; };
                         } else {
                             // Cell with a number
                             cellEl.textContent = cell;
@@ -686,7 +689,7 @@
                 // Update timer styling based on remaining time
                 timerDisplayEl.className = 'timer-display';
                 if (!timerPaused) {
-                    if (gameTimer <= 5) {
+                    if (gameTimer <= 2) {
                         timerDisplayEl.className += ' timer-critical';
                     } else if (gameTimer <= 10) {
                         timerDisplayEl.className += ' timer-warning';
@@ -704,6 +707,7 @@
             // Only show numbers that are not already present in the same row, column, or region
             const possibleNumbers = validNumbers.filter(num => isValidPlacement(data.revealed, row, col, num, template));
             selectedCell = { puzzleType, row, col };
+            lastActiveCell = { puzzleType, row, col }; // Track last clicked cell
             // Create popup overlay
             const overlay = document.createElement('div');
             overlay.className = 'popup-overlay';
@@ -777,9 +781,20 @@
                 return;
             }
             
-            // Randomly reveal one unrevealed cell
-            const randomIndex = Math.floor(Math.random() * unrevealedCells.length);
-            const [r, c] = unrevealedCells[randomIndex];
+            // Prefer lastActiveCell if it's an unrevealed cell in the current puzzle
+            let target = null;
+            if (lastActiveCell && lastActiveCell.puzzleType === currentPuzzleType) {
+                const { row, col } = lastActiveCell;
+                if (data.revealed[row][col] === 0 && template[row][col] !== '-') {
+                    target = [row, col];
+                }
+            }
+            // Otherwise pick random
+            if (!target) {
+                const randomIndex = Math.floor(Math.random() * unrevealedCells.length);
+                target = unrevealedCells[randomIndex];
+            }
+            const [r, c] = target;
             
             data.revealed[r][c] = data.solution[r][c];
             data.revealedCount++;
@@ -886,7 +901,10 @@
                 <button id="backToMenuBtn" style="margin-top: 25px; padding: 12px 32px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Back to Menu</button>
             `;
             container.appendChild(scoreEl);
-            document.getElementById('backToMenuBtn').onclick = resetGame;
+            setTimeout(() => {
+                const btn = document.getElementById('backToMenuBtn');
+                if (btn) btn.onclick = resetGame;
+            }, 0);
         }
         
         function handleNumberInput(number) {
