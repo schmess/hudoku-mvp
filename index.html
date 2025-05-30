@@ -334,7 +334,7 @@
             <button onclick="startPuzzle('6x5')" id="start6x5">Start 6×5 Hudoku</button>
             <button onclick="getHintAndResetTimer()" id="hintBtn" style="display: none;">Get a hint</button>
             <button onclick="showSolution()" id="solutionBtn" style="display: none;">Show Solution</button>
-            <button onclick="resetGame()" id="resetBtn" style="display: none;">Quit Game</button>
+            <button onclick="resetGame()" id="resetBtn" style="display: none;">End Game</button>
         </div>
         
         <div id="timerContainer" style="display: none;">
@@ -837,6 +837,7 @@
         function showScoreScreen(scoreData) {
             stopTimer();
             const container = document.getElementById('puzzlesContainer');
+            container.innerHTML = '';
             const scoreEl = document.createElement('div');
             scoreEl.className = 'score-display';
             const minutes = Math.floor(scoreData.totalTime / 60);
@@ -882,8 +883,10 @@
                 <div style="margin-top: 15px; color: #7f8c8d; font-style: italic;">
                     💡 Faster solving, fewer auto-hints, and fewer mistakes = higher score!
                 </div>
+                <button id="backToMenuBtn" style="margin-top: 25px; padding: 12px 32px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Back to Menu</button>
             `;
             container.appendChild(scoreEl);
+            document.getElementById('backToMenuBtn').onclick = resetGame;
         }
         
         function handleNumberInput(number) {
