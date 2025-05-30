@@ -431,6 +431,9 @@
         // Track the last hovered or clicked cell for hint targeting
         let lastActiveCell = null;
         
+        // Add this at the top of your script section
+        let showOnlyPossibleNumbers = false;
+        
         function shuffle(array) {
             const arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -704,34 +707,38 @@
             const region = template[row][col];
             const validNumbers = getValidNumbers(region);
             const data = currentPuzzles[puzzleType];
-            // Only show numbers that are not already present in the same row, column, or region
             const possibleNumbers = validNumbers.filter(num => isValidPlacement(data.revealed, row, col, num, template));
             selectedCell = { puzzleType, row, col };
-            lastActiveCell = { puzzleType, row, col }; // Track last clicked cell
-            // Create popup overlay
+            lastActiveCell = { puzzleType, row, col };
+
             const overlay = document.createElement('div');
             overlay.className = 'popup-overlay';
             overlay.onclick = hideNumberInput;
-            // Create popup
+
             const popup = document.createElement('div');
             popup.className = 'input-popup';
             const title = document.createElement('h3');
             title.textContent = `Enter number for Region ${region.toUpperCase()}`;
             popup.appendChild(title);
+
             const subtitle = document.createElement('p');
-            subtitle.textContent = `Possible numbers: ${possibleNumbers.join(', ')}`;
+            if (showOnlyPossibleNumbers) {
+                subtitle.textContent = `Possible numbers: ${possibleNumbers.join(', ')}`;
+            } else {
+                subtitle.textContent = `Numbers: ${validNumbers.join(', ')}`;
+            }
             subtitle.style.color = '#666';
             subtitle.style.margin = '0 0 15px 0';
             popup.appendChild(subtitle);
+
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'number-buttons';
-            // Create number buttons
-            possibleNumbers.forEach(num => {
+            const numbersToShow = showOnlyPossibleNumbers ? possibleNumbers : validNumbers;
+            numbersToShow.forEach(num => {
                 const button = document.createElement('button');
                 button.className = 'number-btn';
                 button.textContent = num;
                 button.onclick = () => handleNumberInput(num);
-                // Make the button more visible
                 button.style.background = '#e0e7ff';
                 button.style.color = '#222';
                 button.style.border = '2px solid #667eea';
@@ -739,12 +746,13 @@
                 buttonContainer.appendChild(button);
             });
             popup.appendChild(buttonContainer);
-            // Add cancel button
+
             const cancelBtn = document.createElement('button');
             cancelBtn.textContent = 'Cancel';
             cancelBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 5px; cursor: pointer; color: #222;';
             cancelBtn.onclick = hideNumberInput;
             popup.appendChild(cancelBtn);
+
             document.body.appendChild(overlay);
             document.body.appendChild(popup);
         }
@@ -755,6 +763,7 @@
             if (overlay) overlay.remove();
             if (popup) popup.remove();
             selectedCell = null;
+            showOnlyPossibleNumbers = false;
         }
         
         function autoHint() {
@@ -911,33 +920,36 @@
             if (!selectedCell) return;
             const { puzzleType, row, col } = selectedCell;
             const data = currentPuzzles[puzzleType];
+            const template = puzzleType === '3x5' ? template3x5 : template6x5;
             const correctNumber = data.solution[row][col];
+            const possibleNumbers = getValidNumbers(template[row][col]).filter(num => isValidPlacement(data.revealed, row, col, num, template));
             hideNumberInput();
+
             gameTimer = 15;
             if (number === correctNumber) {
                 data.revealed[row][col] = number;
                 data.revealedCount++;
                 updateTimerDisplay();
                 updateDisplay();
-                // Check if puzzle is complete
                 if (data.revealedCount === data.totalCells) {
                     setTimeout(() => {
-                        // Show score and save to localStorage for this puzzle
                         const scoreData = calculateScore();
                         showScoreScreen(scoreData);
                         saveScoreToLocalStorage(scoreData);
                     }, 100);
                 }
             } else {
-                // Wrong answer - show red and remove with delay
                 gameStats.incorrectEntries++;
-                const cellElement = document.querySelector(`[data-puzzle="${puzzleType}"][data-row="${row}"][data-col="${col}"]`);
+                const cellElement = document.querySelector(`[data-puzzle=\"${puzzleType}\"][data-row=\"${row}\"][data-col=\"${col}\"]`);
                 if (cellElement) {
                     cellElement.textContent = number;
                     cellElement.classList.add('wrong');
                     setTimeout(() => {
                         cellElement.textContent = '?';
                         cellElement.classList.remove('wrong');
+                        // If the number is not a possible number, re-open modal with only possible numbers
+                        showOnlyPossibleNumbers = true;
+                        showNumberInput(puzzleType, row, col);
                     }, 1500);
                 }
             }
