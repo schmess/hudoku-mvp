@@ -912,6 +912,11 @@
         
         function showScoreScreen(scoreData) {
             stopTimer();
+            // Hide game controls and timer when showing score
+            document.getElementById('hintBtn').style.display = 'none';
+            document.getElementById('solutionBtn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            document.getElementById('timerContainer').style.display = 'none';
             const container = document.getElementById('puzzlesContainer');
             container.innerHTML = '';
             const scoreEl = document.createElement('div');
