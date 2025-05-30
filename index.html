@@ -332,6 +332,7 @@
         <div class="controls">
             <button onclick="startPuzzle('3x5')" id="start3x5">Start 3×5 Hudoku</button>
             <button onclick="startPuzzle('6x5')" id="start6x5">Start 6×5 Hudoku</button>
+            <button onclick="getHintAndResetTimer()" id="hintBtn" style="display: none;">Get a hint</button>
             <button onclick="switchPuzzle()" id="switchBtn" style="display: none;">Switch Puzzle</button>
             <button onclick="showSolution()" id="solutionBtn" style="display: none;">Show Solution</button>
             <button onclick="resetGame()" id="resetBtn" style="display: none;">New Game</button>
@@ -951,6 +952,7 @@
                 // Update button visibility
                 document.getElementById('start3x5').style.display = 'none';
                 document.getElementById('start6x5').style.display = 'none';
+                document.getElementById('hintBtn').style.display = 'inline-block';
                 document.getElementById('switchBtn').style.display = 'inline-block';
                 document.getElementById('solutionBtn').style.display = 'inline-block';
                 document.getElementById('resetBtn').style.display = 'inline-block';
@@ -980,6 +982,7 @@
             // Reset button visibility
             document.getElementById('start3x5').style.display = 'inline-block';
             document.getElementById('start6x5').style.display = 'inline-block';
+            document.getElementById('hintBtn').style.display = 'none';
             document.getElementById('switchBtn').style.display = 'none';
             document.getElementById('solutionBtn').style.display = 'none';
             document.getElementById('resetBtn').style.display = 'none';
@@ -1089,6 +1092,12 @@
             } else {
                 statsEl.textContent = 'Choose a puzzle size to start your timed Hudoku challenge!';
             }
+        }
+        
+        function getHintAndResetTimer() {
+            getHint();
+            gameTimer = 15;
+            updateTimerDisplay();
         }
         
         // Initialize the interface
