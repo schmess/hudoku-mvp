@@ -330,7 +330,7 @@
         <div class="controls">
             <button onclick="startPuzzle('4x5')" id="start4x5">Start 4×5 Hudoku</button>
             <button onclick="startPuzzle('6x5')" id="start6x5">Start 6×5 Hudoku</button>
-            <button onclick="getHintAndResetTimer()" id="hintBtn" style="display: none;">Get a hint</button>
+            <button onclick="getHintAndResetTimer()" id="hintBtn" style="display: none;">Get a Hint</button>
             <button onclick="showSolution()" id="solutionBtn" style="display: none;">Show Solution</button>
             <button onclick="resetGame()" id="resetBtn" style="display: none;">End Game</button>
         </div>
@@ -942,7 +942,7 @@
                         <div class="score-value">${timeString}</div>
                     </div>
                     <div class="score-item">
-                        <div class="score-label">Auto-Hints</div>
+                        <div class="score-label">Hints</div>
                         <div class="score-value">${scoreData.lapses}</div>
                     </div>
                     <div class="score-item">
@@ -1065,10 +1065,8 @@
                 alert('Start a puzzle first!');
                 return;
             }
-            
             const data = currentPuzzles[currentPuzzleType];
             const template = currentPuzzleType === '4x5' ? template4x5 : template6x5;
-            
             // Find all unrevealed cells in current puzzle
             const unrevealedCells = [];
             for (let r = 0; r < data.revealed.length; r++) {
@@ -1078,20 +1076,17 @@
                     }
                 }
             }
-            
             if (unrevealedCells.length === 0) {
                 alert('This puzzle is already complete!');
                 return;
             }
-            
             // Randomly reveal one unrevealed cell
             const randomIndex = Math.floor(Math.random() * unrevealedCells.length);
             const [r, c] = unrevealedCells[randomIndex];
-            
             data.revealed[r][c] = data.solution[r][c];
             data.revealedCount++;
             data.hintsUsed++;
-            
+            gameStats.lapses++; // <-- increment lapses for manual hint
             updateDisplay();
         }
         
