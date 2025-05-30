@@ -930,6 +930,7 @@
                 }
             } else {
                 // Wrong answer - show red and remove with delay
+                gameStats.incorrectEntries++;
                 const cellElement = document.querySelector(`[data-puzzle="${puzzleType}"][data-row="${row}"][data-col="${col}"]`);
                 if (cellElement) {
                     cellElement.textContent = number;
