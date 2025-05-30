@@ -548,10 +548,8 @@
         function createPuzzle(template) {
             const solution = solvePuzzle(template);
             if (!solution) return null;
-            
             // Create revealed grid - initially all zeros (hidden)
             const revealed = template.map(row => row.map(cell => isEmptyCell(cell) ? '-' : 0));
-            
             // Get cells for each region
             const regionCells = {};
             for (let r = 0; r < template.length; r++) {
@@ -563,9 +561,7 @@
                     }
                 }
             }
-            
             let totalRevealed = 0;
-            
             // Reveal numbers per region based on size:
             // Regions A & C (3x3, numbers 1-9): reveal 4 numbers each
             // Regions B & D (2x2, numbers 1-4): reveal 2 numbers each
@@ -580,28 +576,56 @@
                     totalRevealed++;
                 }
             });
-            
             // Count total fillable cells
             const totalCells = Object.values(regionCells).flat().length;
-            
-            return { 
-                solution, 
-                revealed, 
+            // --- Generate empty cell hints (for '-a', '-c', etc.) ---
+            const emptyHints = {};
+            const usedEmptyNumbers = {};
+            for (let r = 0; r < template.length; r++) {
+                for (let c = 0; c < template[r].length; c++) {
+                    const region = template[r][c];
+                    if (isEmptyCell(region)) {
+                        const mask = region.slice(1); // e.g., for '-a', mask is 'a'
+                        if (!usedEmptyNumbers[mask]) usedEmptyNumbers[mask] = new Set();
+                        let shown = false;
+                        // Use the same logic as before, but only once
+                        const unviableSetFromExistingClues = getUnviableCluesInRegion(revealed, template, mask);
+                        const unviableSetFromRowColSolution = getUnviableCluesInRegionRowCol(solution, template, mask, r, c);
+                        for (let num = 9; num >= 1; num--) {
+                            if (
+                                !unviableSetFromExistingClues.includes(num) &&
+                                !unviableSetFromRowColSolution.includes(num) &&
+                                !usedEmptyNumbers[mask].has(num)
+                            ) {
+                                emptyHints[`${r},${c}`] = num;
+                                usedEmptyNumbers[mask].add(num);
+                                shown = true;
+                                break;
+                            }
+                        }
+                        if (!shown) {
+                            emptyHints[`${r},${c}`] = '-';
+                        }
+                    }
+                }
+            }
+            return {
+                solution,
+                revealed,
                 totalCells,
                 revealedCount: totalRevealed,
-                hintsUsed: 0
+                hintsUsed: 0,
+                emptyHints // <-- store the empty cell hints
             };
         }
         
         function renderGrid(grid, template, title, isPuzzle, solution) {
             const section = document.createElement('div');
             section.className = 'puzzle-section';
-            
             const titleEl = document.createElement('div');
             titleEl.className = 'puzzle-title';
             titleEl.textContent = title;
             section.appendChild(titleEl);
-            
             // Add progress and switch info for puzzles
             if (isPuzzle && currentPuzzleType) {
                 const data = currentPuzzles[currentPuzzleType];
@@ -612,7 +636,6 @@
                 if (data.hintsUsed > 0) {
                     progressEl.textContent += ` • ${data.hintsUsed} hints used`;
                 }
-                
                 // Add other puzzle info
                 const otherPuzzle = currentPuzzleType === '4x5' ? '6x5' : '4x5';
                 if (currentPuzzles[otherPuzzle]) {
@@ -620,58 +643,32 @@
                     const otherPercentage = Math.round((otherData.revealedCount / otherData.totalCells) * 100);
                     progressEl.textContent += ` • ${otherPuzzle.toUpperCase()}: ${otherPercentage}% complete`;
                 }
-                
                 section.appendChild(progressEl);
             }
-            
             const gridEl = document.createElement('div');
             gridEl.className = 'grid';
-            
-            // Track used numbers for empty cells per mask (for this render)
-            const usedEmptyNumbers = {};
+            // Track used numbers for empty cells per mask (for this render) -- now unused
             grid.forEach((row, r) => {
                 const rowEl = document.createElement('div');
                 rowEl.className = 'grid-row';
-                
                 row.forEach((cell, c) => {
                     const cellEl = document.createElement('div');
                     cellEl.className = 'cell';
-                    
                     // Add data attributes for cell identification
                     cellEl.setAttribute('data-puzzle', currentPuzzleType);
                     cellEl.setAttribute('data-row', r);
                     cellEl.setAttribute('data-col', c);
-                    
                     const region = template[r][c];
                     if (isEmptyCell(region)) {
                         cellEl.className += ' empty';
-                        // Get the mask for this empty cell
-                        const mask = region.slice(1); // e.g., for '-a', mask is 'a'
-                        if (!usedEmptyNumbers[mask]) usedEmptyNumbers[mask] = new Set();
-                        let shown = false;
-                        const unviableSetFromExistingClues = getUnviableCluesInRegion(grid, template, mask);
-                        const unviableSetFromRowColSolution = getUnviableCluesInRegionRowCol(solution, template, mask, r, c);
-                        // Prefer higher numbers first
-                        for (let num = 9; num >= 1; num--) {
-                            if (
-                                !unviableSetFromExistingClues.includes(num) &&
-                                !unviableSetFromRowColSolution.includes(num) &&
-                                !usedEmptyNumbers[mask].has(num)
-                            ) {
-                                cellEl.textContent = num;
-                                cellEl.style.fontSize = '0.9em';
-                                cellEl.style.color = '#b7791f';
-                                usedEmptyNumbers[mask].add(num);
-                                shown = true;
-                                break;
-                            }
-                        }
-                        if (!shown) {
-                            cellEl.textContent = '-';
-                        }
+                        // Use precomputed hint
+                        const data = currentPuzzles[currentPuzzleType];
+                        const hint = data && data.emptyHints ? data.emptyHints[`${r},${c}`] : '-';
+                        cellEl.textContent = hint;
+                        cellEl.style.fontSize = '0.9em';
+                        cellEl.style.color = '#b7791f';
                     } else {
                         cellEl.className += ` region-${region}`;
-                        
                         if (cell === 0 && isPuzzle) {
                             // Empty cell that can be clicked
                             cellEl.textContent = '?';
@@ -696,13 +693,10 @@
                             }
                         }
                     }
-                    
                     rowEl.appendChild(cellEl);
                 });
-                
                 gridEl.appendChild(rowEl);
             });
-            
             section.appendChild(gridEl);
             return section;
         }
