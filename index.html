@@ -109,6 +109,7 @@
             transition: all 0.2s ease;
             cursor: pointer;
             position: relative;
+            box-sizing: border-box;
         }
         
         .cell:hover:not(.empty):not(.given) {
@@ -620,6 +621,12 @@
         }
         
         function renderGrid(grid, template, title, isPuzzle, solution) {
+            const regionColors = {
+                a: '190, 227, 248',   // #bee3f8
+                b: '251, 182, 206',   // #fbb6ce
+                c: '198, 246, 213',   // #c6f6d5
+                d: '254, 215, 170'    // #fed7aa
+            };
             const section = document.createElement('div');
             section.className = 'puzzle-section';
             const titleEl = document.createElement('div');
@@ -667,6 +674,12 @@
                         cellEl.textContent = hint;
                         cellEl.style.fontSize = '0.9em';
                         cellEl.style.color = '#b7791f';
+                        // Set lighter region color as background
+                        const mask = region.slice(1); // e.g., for '-a', mask is 'a'
+                        if (regionColors[mask]) {
+                            cellEl.style.outline = `3px solid rgba(${regionColors[mask]}, 0.75)`;
+                            cellEl.style.outlineOffset = '-3px';
+                        }
                     } else {
                         cellEl.className += ` region-${region}`;
                         if (cell === 0 && isPuzzle) {
