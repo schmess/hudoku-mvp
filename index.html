@@ -416,7 +416,7 @@
         let timerInterval = null; // Timer interval reference
         let timerPaused = false; // Track if timer is paused
         let gameStats = {
-            lapses: 0,        // Number of times timer ran out
+            hintsUsed: 0,        // Number of times timer ran out
             incorrectEntries: 0, // Number of wrong answers
             totalTime: 0      // Total game time in seconds
         };
@@ -866,7 +866,7 @@
             data.revealed[r][c] = data.solution[r][c];
             data.revealedCount++;
             data.hintsUsed++;
-            gameStats.lapses++;
+            gameStats.hintsUsed++;
             
             // Reset timer after auto hint
             gameTimer = 30;
@@ -898,7 +898,7 @@
             const timePenalty = totalTimeSeconds * 10;
             
             // Lapse penalty: -500 points per auto-hint
-            const lapsePenalty = gameStats.lapses * 500;
+            const lapsePenalty = gameStats.hintsUsed * 500;
             
             // Incorrect entry penalty: -100 points per wrong answer
             const incorrectPenalty = gameStats.incorrectEntries * 100;
@@ -908,7 +908,7 @@
             return {
                 finalScore,
                 totalTime: totalTimeSeconds,
-                lapses: gameStats.lapses,
+                hintsUsed: gameStats.hintsUsed,
                 incorrectEntries: gameStats.incorrectEntries,
                 timePenalty,
                 lapsePenalty,
@@ -943,7 +943,7 @@
                     </div>
                     <div class="score-item">
                         <div class="score-label">Hints</div>
-                        <div class="score-value">${scoreData.lapses}</div>
+                        <div class="score-value">${scoreData.hintsUsed}</div>
                     </div>
                     <div class="score-item">
                         <div class="score-label">Wrong Entries</div>
@@ -1025,6 +1025,10 @@
                 currentPuzzles = {};
                 currentPuzzles[puzzleType] = result;
                 currentPuzzleType = puzzleType;
+                // Reset stats for new game
+                gameStats.hintsUsed = 0;
+                gameStats.incorrectEntries = 0;
+                gameStats.totalTime = 0;
                 // Update button visibility
                 document.getElementById('start4x5').style.display = 'none';
                 document.getElementById('start6x5').style.display = 'none';
@@ -1042,21 +1046,20 @@
             currentPuzzles = {};
             currentPuzzleType = null;
             showingSolutions = false;
-            
+            // Reset stats for new game
+            gameStats.hintsUsed = 0;
+            gameStats.incorrectEntries = 0;
             // Reset button visibility
             document.getElementById('start4x5').style.display = 'inline-block';
             document.getElementById('start6x5').style.display = 'inline-block';
             document.getElementById('hintBtn').style.display = 'none';
             document.getElementById('solutionBtn').style.display = 'none';
             document.getElementById('resetBtn').style.display = 'none';
-            
             // Reset solution button text
             document.getElementById('solutionBtn').textContent = 'Show Solution';
-            
             // Hide timer and stop it
             document.getElementById('timerContainer').style.display = 'none';
             stopTimer();
-            
             updateDisplay();
         }
         
@@ -1086,7 +1089,7 @@
             data.revealed[r][c] = data.solution[r][c];
             data.revealedCount++;
             data.hintsUsed++;
-            gameStats.lapses++; // <-- increment lapses for manual hint
+            gameStats.hintsUsed++; // <-- increment hintsUsed for manual hint
             updateDisplay();
         }
         
