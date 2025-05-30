@@ -907,8 +907,8 @@
             // Lapse penalty: -500 points per auto-hint
             const lapsePenalty = gameStats.hintsUsed * 500;
             
-            // Incorrect entry penalty: -100 points per wrong answer
-            const incorrectPenalty = gameStats.incorrectEntries * 100;
+            // Incorrect entry penalty: -250 points per wrong answer
+            const incorrectPenalty = gameStats.incorrectEntries * 250;
             
             const finalScore = Math.max(0, baseScore - timePenalty - lapsePenalty - incorrectPenalty);
             
