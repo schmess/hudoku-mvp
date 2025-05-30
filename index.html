@@ -520,11 +520,11 @@
             let totalRevealed = 0;
             
             // Reveal numbers per region based on size:
-            // Regions A & C (3x3, numbers 1-9): reveal 2 numbers each
-            // Regions B & D (2x2, numbers 1-4): reveal 1 number each
+            // Regions A & C (3x3, numbers 1-9): reveal 4 numbers each
+            // Regions B & D (2x2, numbers 1-4): reveal 2 numbers each
             Object.keys(regionCells).forEach(region => {
                 const cells = regionCells[region];
-                const numbersToReveal = (region === 'a' || region === 'c') ? 2 : 1;
+                const numbersToReveal = (region === 'a' || region === 'c') ? 4 : 2;
                 
                 // Randomly select cells to reveal in this region
                 const shuffledCells = shuffle(cells);
