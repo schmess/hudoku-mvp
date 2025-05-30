@@ -412,7 +412,7 @@
         let currentPuzzleType = null; // Track which puzzle is currently being shown
         
         // Timer and scoring system
-        let gameTimer = 15; // Current timer value in seconds
+        let gameTimer = 30; // Current timer value in seconds
         let gameStartTime = null; // When the game started
         let timerInterval = null; // Timer interval reference
         let timerPaused = false; // Track if timer is paused
@@ -614,11 +614,16 @@
                         // Track used numbers for empty cells
                         if (!window.usedEmptyNumbers) window.usedEmptyNumbers = new Set();
                         let shown = false;
+                        // Get all clue numbers (revealed numbers) in the grid
+                        let clueNumbers = new Set();
+                        grid.forEach(rowArr => rowArr.forEach(val => {
+                            if (typeof val === 'number' && val > 0) clueNumbers.add(val);
+                        }));
                         if (c <= 2) {
                             // Check column for numbers 4-9
                             const colNumbers = grid.map(rowArr => typeof rowArr[c] === 'number' && rowArr[c] > 0 ? rowArr[c] : null).filter(x => x !== null);
                             for (let num = 4; num <= 9; num++) {
-                                if (!colNumbers.includes(num) && !window.usedEmptyNumbers.has(num)) {
+                                if (!colNumbers.includes(num) && !window.usedEmptyNumbers.has(num) && !clueNumbers.has(num)) {
                                     cellEl.textContent = num;
                                     cellEl.style.fontSize = '0.9em';
                                     cellEl.style.color = '#b7791f';
@@ -631,7 +636,7 @@
                             // Check row for numbers 4-9
                             const rowNumbers = row.filter(x => typeof x === 'number' && x > 0);
                             for (let num = 4; num <= 9; num++) {
-                                if (!rowNumbers.includes(num) && !window.usedEmptyNumbers.has(num)) {
+                                if (!rowNumbers.includes(num) && !window.usedEmptyNumbers.has(num) && !clueNumbers.has(num)) {
                                     cellEl.textContent = num;
                                     cellEl.style.fontSize = '0.9em';
                                     cellEl.style.color = '#b7791f';
@@ -686,7 +691,7 @@
         
         function startTimer() {
             gameStartTime = Date.now();
-            gameTimer = 15;
+            gameTimer = 30;
             updateTimerDisplay();
             timerPaused = false;
             if (timerInterval) clearInterval(timerInterval);
@@ -846,7 +851,7 @@
             gameStats.lapses++;
             
             // Reset timer after auto hint
-            gameTimer = 15;
+            gameTimer = 30;
             updateTimerDisplay();
             updateDisplay();
             
@@ -960,7 +965,7 @@
             const possibleNumbers = getValidNumbers(template[row][col]).filter(num => isValidPlacement(data.revealed, row, col, num, template));
             hideNumberInput();
 
-            gameTimer = 15;
+            gameTimer = 30;
             if (number === correctNumber) {
                 data.revealed[row][col] = number;
                 data.revealedCount++;
@@ -982,10 +987,10 @@
                     setTimeout(() => {
                         cellElement.textContent = '?';
                         cellElement.classList.remove('wrong');
-                        // If the number is not a possible number, re-open modal with only possible numbers
-                        showOnlyPossibleNumbers = true;
-                        showNumberInput(puzzleType, row, col);
                     }, 1500);
+                    // If the number is not a possible number, re-open modal with only possible numbers
+                    showOnlyPossibleNumbers = true;
+                    showNumberInput(puzzleType, row, col);
                 }
             }
         }
@@ -1136,7 +1141,7 @@
         
         function getHintAndResetTimer() {
             getHint();
-            gameTimer = 15;
+            gameTimer = 30;
             updateTimerDisplay();
         }
         
