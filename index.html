@@ -611,24 +611,39 @@
                     const region = template[r][c];
                     if (region === '-') {
                         cellEl.className += ' empty';
-                        cellEl.textContent = '-';
-                        /*
-                        // Find the first number above 4 (5-9) that is NOT present in this row
-                        const rowNumbers = row.filter(x => typeof x === 'number' && x > 0);
+                        // Track used numbers for empty cells
+                        if (!window.usedEmptyNumbers) window.usedEmptyNumbers = new Set();
                         let shown = false;
-                        for (let num = 5; num <= 9; num++) {
-                            if (!rowNumbers.includes(num)) {
-                                cellEl.textContent = num;
-                                cellEl.style.fontSize = '0.9em';
-                                cellEl.style.color = '#b7791f';
-                                shown = true;
-                                break;
+                        if (c <= 2) {
+                            // Check column for numbers 4-9
+                            const colNumbers = grid.map(rowArr => typeof rowArr[c] === 'number' && rowArr[c] > 0 ? rowArr[c] : null).filter(x => x !== null);
+                            for (let num = 4; num <= 9; num++) {
+                                if (!colNumbers.includes(num) && !window.usedEmptyNumbers.has(num)) {
+                                    cellEl.textContent = num;
+                                    cellEl.style.fontSize = '0.9em';
+                                    cellEl.style.color = '#b7791f';
+                                    window.usedEmptyNumbers.add(num);
+                                    shown = true;
+                                    break;
+                                }
+                            }
+                        } else {
+                            // Check row for numbers 4-9
+                            const rowNumbers = row.filter(x => typeof x === 'number' && x > 0);
+                            for (let num = 4; num <= 9; num++) {
+                                if (!rowNumbers.includes(num) && !window.usedEmptyNumbers.has(num)) {
+                                    cellEl.textContent = num;
+                                    cellEl.style.fontSize = '0.9em';
+                                    cellEl.style.color = '#b7791f';
+                                    window.usedEmptyNumbers.add(num);
+                                    shown = true;
+                                    break;
+                                }
                             }
                         }
                         if (!shown) {
                             cellEl.textContent = '-';
                         }
-                        */
                     } else {
                         cellEl.className += ` region-${region}`;
                         
@@ -664,6 +679,8 @@
             });
             
             section.appendChild(gridEl);
+            // After section.appendChild(gridEl);
+            window.usedEmptyNumbers = undefined;
             return section;
         }
         
