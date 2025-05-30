@@ -422,6 +422,13 @@
             totalTime: 0      // Total game time in seconds
         };
         
+        const HINTS_PER_REGION = {
+            a: 4, // 3x3 region
+            b: 2, // 2x2 region
+            c: 4, // 3x3 region
+            d: 2  // 2x2 region
+        };
+        
         function shuffle(array) {
             const arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -526,7 +533,7 @@
             // Regions B & D (2x2, numbers 1-4): reveal 2 numbers each
             Object.keys(regionCells).forEach(region => {
                 const cells = regionCells[region];
-                const numbersToReveal = (region === 'a' || region === 'c') ? 4 : 2;
+                const numbersToReveal = HINTS_PER_REGION[region] || 1;
                 // Randomly select cells to reveal in this region
                 const shuffledCells = shuffle(cells);
                 for (let i = 0; i < Math.min(numbersToReveal, cells.length); i++) {
@@ -693,49 +700,47 @@
             const template = puzzleType === '3x5' ? template3x5 : template6x5;
             const region = template[row][col];
             const validNumbers = getValidNumbers(region);
-            
+            const data = currentPuzzles[puzzleType];
+            // Only show numbers that are not already present in the same row, column, or region
+            const possibleNumbers = validNumbers.filter(num => isValidPlacement(data.revealed, row, col, num, template));
             selectedCell = { puzzleType, row, col };
-            
             // Create popup overlay
             const overlay = document.createElement('div');
             overlay.className = 'popup-overlay';
             overlay.onclick = hideNumberInput;
-            
             // Create popup
             const popup = document.createElement('div');
             popup.className = 'input-popup';
-            
             const title = document.createElement('h3');
             title.textContent = `Enter number for Region ${region.toUpperCase()}`;
             popup.appendChild(title);
-            
             const subtitle = document.createElement('p');
-            subtitle.textContent = `Valid numbers: ${validNumbers.join(', ')}`;
+            subtitle.textContent = `Possible numbers: ${possibleNumbers.join(', ')}`;
             subtitle.style.color = '#666';
             subtitle.style.margin = '0 0 15px 0';
             popup.appendChild(subtitle);
-            
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'number-buttons';
-            
             // Create number buttons
-            validNumbers.forEach(num => {
+            possibleNumbers.forEach(num => {
                 const button = document.createElement('button');
                 button.className = 'number-btn';
                 button.textContent = num;
                 button.onclick = () => handleNumberInput(num);
+                // Make the button more visible
+                button.style.background = '#e0e7ff';
+                button.style.color = '#222';
+                button.style.border = '2px solid #667eea';
+                button.style.fontWeight = 'bold';
                 buttonContainer.appendChild(button);
             });
-            
             popup.appendChild(buttonContainer);
-            
             // Add cancel button
             const cancelBtn = document.createElement('button');
             cancelBtn.textContent = 'Cancel';
-            cancelBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 5px; cursor: pointer;';
+            cancelBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 5px; cursor: pointer; color: #222;';
             cancelBtn.onclick = hideNumberInput;
             popup.appendChild(cancelBtn);
-            
             document.body.appendChild(overlay);
             document.body.appendChild(popup);
         }
