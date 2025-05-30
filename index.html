@@ -651,8 +651,8 @@
                         let shown = false;
                         const unviableSetFromExistingClues = getUnviableCluesInRegion(grid, template, mask);
                         const unviableSetFromRowColSolution = getUnviableCluesInRegionRowCol(solution, template, mask, r, c);
-                        // Try numbers above 4
-                        for (let num = 5; num <= 9; num++) {
+                        // Prefer higher numbers first
+                        for (let num = 9; num >= 1; num--) {
                             if (
                                 !unviableSetFromExistingClues.includes(num) &&
                                 !unviableSetFromRowColSolution.includes(num) &&
