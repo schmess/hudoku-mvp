@@ -516,7 +516,7 @@
             return Array.from(unviableClues);
         }
         
-        function solvePuzzle(template) {
+        function solvePuzzleOld(template) {
             const grid = template.map(row => row.map(cell => isEmptyCell(cell) ? '-' : 0));
             
             function backtrack() {
@@ -545,7 +545,35 @@
             }
             return null;
         }
-        
+
+        function solvePuzzle(template, given = null) {
+            const grid = given ? given.map(row => row.slice())
+                : template.map(row => row.map(cell => isEmptyCell(cell) ? '-' : 0));
+            function backtrack() {
+                for (let r = 0; r < grid.length; r++) {
+                    for (let c = 0; c < grid[r].length; c++) {
+                        if (grid[r][c] === 0) {
+                            const region = template[r][c];
+                            const validNums = getValidNumbers(region);
+                            for (const n of validNums) {
+                                if (isValidPlacement(grid, r, c, n, template)) {
+                                    grid[r][c] = n;
+                                    if (backtrack()) return true;
+                                    grid[r][c] = 0;
+                                }
+                            }
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            if (backtrack()) {
+                return grid;
+            }
+            return null;
+        }
+
         function createPuzzle(template) {
             const solution = solvePuzzle(template);
             if (!solution) return null;
@@ -995,16 +1023,28 @@
                 if (btn) btn.onclick = resetGame;
             }, 0);
         }
-        
+
         function handleNumberInput(number) {
             if (!selectedCell) return;
             const { puzzleType, row, col } = selectedCell;
             const data = currentPuzzles[puzzleType];
             const template = puzzleType === '4x5' ? template4x5 : template6x5;
-            const correctNumber = data.solution[row][col];
-            const possibleNumbers = getValidNumbers(template[row][col]).filter(num => isValidPlacement(data.revealed, row, col, num, template));
+            let correctNumber = data.solution[row][col];
             hideNumberInput();
 
+            if (number !== correctNumber) {
+                // If not, try to find a new solution with the number placed
+                const testGrid = data.revealed.map(r => r.slice());
+                testGrid[row][col] = number;
+                const newSolution = solvePuzzle(template, testGrid);
+                if (newSolution) {
+                    data.solution = newSolution;
+                    correctNumber = number;
+                }
+            }
+
+
+            // 1. If the number matches the current solution, accept it
             if (number === correctNumber) {
                 addTimeBonus();
                 data.revealed[row][col] = number;
@@ -1018,21 +1058,23 @@
                         saveScoreToLocalStorage(scoreData);
                     }, 100);
                 }
-            } else {
-                gameTimer = 30;
-                gameStats.incorrectEntries++;
-                const cellElement = document.querySelector(`[data-puzzle=\"${puzzleType}\"][data-row=\"${row}\"][data-col=\"${col}\"]`);
-                if (cellElement) {
-                    cellElement.textContent = number;
-                    cellElement.classList.add('wrong');
-                    setTimeout(() => {
-                        cellElement.textContent = '?';
-                        cellElement.classList.remove('wrong');
-                    }, 1500);
-                    // If the number is not a possible number, re-open modal with only possible numbers
-                    showOnlyPossibleNumbers = true;
-                    showNumberInput(puzzleType, row, col);
-                }
+                return;
+            }
+
+
+            // 2. Otherwise, treat as error
+            gameTimer = 30;
+            gameStats.incorrectEntries++;
+            const cellElement = document.querySelector(`[data-puzzle=\"${puzzleType}\"][data-row=\"${row}\"][data-col=\"${col}\"]`);
+            if (cellElement) {
+                cellElement.textContent = number;
+                cellElement.classList.add('wrong');
+                setTimeout(() => {
+                    cellElement.textContent = '?';
+                    cellElement.classList.remove('wrong');
+                }, 1500);
+                showOnlyPossibleNumbers = true;
+                showNumberInput(puzzleType, row, col);
             }
         }
         
