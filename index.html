@@ -373,6 +373,7 @@
         let gameStartTime = null; // When the game started
         let timerInterval = null; // Timer interval reference
         let timerPaused = false; // Track if timer is paused
+        let timerWasPaused = false;
         let gameStats = {
             incorrectEntries: 0, // Number of wrong answers
             totalTime: 0,        // Total game time in seconds
@@ -685,6 +686,7 @@
             gameStartTime = Date.now();
             updateTimerDisplay();
             timerPaused = false;
+            timerWasPaused = false;
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if (!timerPaused) {
@@ -799,6 +801,19 @@
         }
         
         function calculateScore(timerExpired = false) {
+            // If timer was paused at any point, score is 0
+            if (timerWasPaused) {
+                return {
+                    finalScore: 0,
+                    resolved: 0,
+                    totalCells: 0,
+                    incorrectEntries: 0,
+                    bonus: 0,
+                    timeLeft: 0,
+                    timerExpired,
+                    paused: true
+                };
+            }
             const data = currentPuzzles[currentPuzzleType];
             const totalCells = data ? data.totalCells : 0;
             // Only count user-solved cells (not initial clues)
@@ -836,6 +851,7 @@
                 bonusText = `<div class="score-item"><div class="score-label">Time Bonus</div><div class="score-value">+${scoreData.bonus}</div></div>`;
             }
             let timerText = scoreData.timerExpired ? '<div style="color:#e74c3c;">⏰ Timer expired!</div>' : '';
+            let pausedText = scoreData.paused ? '<div style="color:#e74c3c;">⏸️ Timer was paused — Score is 0!</div>' : '';
             scoreEl.innerHTML = `
                 <div class="score-title">🎉 Game Over!</div>
                 <div style="font-size: 2em; color: #e74c3c; margin: 10px 0; font-weight: bold;">
@@ -844,15 +860,16 @@
                 <div class="score-details">
                     <div class="score-item">
                         <div class="score-label">Cells Solved</div>
-                        <div class="score-value">${scoreData.resolved}/${scoreData.totalCells}</div>
+                        <div class="score-value">${scoreData.resolved || 0}/${scoreData.totalCells || 0}</div>
                     </div>
                     <div class="score-item">
                         <div class="score-label">Wrong Entries</div>
-                        <div class="score-value">${scoreData.incorrectEntries}</div>
+                        <div class="score-value">${scoreData.incorrectEntries || 0}</div>
                     </div>
                     ${bonusText}
                 </div>
                 ${timerText}
+                ${pausedText}
                 <div style="margin-top: 15px; color: #7f8c8d; font-style: italic;">
                     💡 Solve more cells and finish faster for a higher score!
                 </div>
@@ -1026,6 +1043,7 @@
             if (timerDisplayEl) {
                 timerDisplayEl.addEventListener('click', function() {
                     timerPaused = !timerPaused;
+                    if (timerPaused) timerWasPaused = true;
                     updateTimerDisplay();
                     if (!timerPaused) {
                         // If unpausing, update the timer value immediately
