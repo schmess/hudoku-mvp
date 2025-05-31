@@ -393,14 +393,14 @@
             ['a', 'a', 'a', 'b', 'b'],
             ['a', 'a', 'a', 'b', 'b'],
             ['a', 'a', 'a', 'd', 'd'],
-            ['-a', '-a', '-a', 'd', 'd']
+            ['-a', '-a', '-ar', 'd', 'd']
         ];
         
         const template6x5 = [
             ['a', 'a', 'a', 'b', 'b'],
             ['a', 'a', 'a', 'b', 'b'],
-            ['a', 'a', 'a', '-a', '-a'],
-            ['c', 'c', 'c', '-c', '-c'],
+            ['a', 'a', 'a', '-at', '-at'],
+            ['c', 'c', 'c', '-cb', '-cb'],
             ['c', 'c', 'c', 'd', 'd'],
             ['c', 'c', 'c', 'd', 'd']
         ];
@@ -674,11 +674,21 @@
                         cellEl.textContent = hint;
                         cellEl.style.fontSize = '0.9em';
                         cellEl.style.color = '#b7791f';
+                        // Border logic for third letter
+                        if (region.length > 2) {
+                            const borderSide = region[2];
+                            const borderStyle = '2px dashed black';
+                            if (borderSide === 't') cellEl.style.borderTop = borderStyle;
+                            if (borderSide === 'b') cellEl.style.borderBottom = borderStyle;
+                            if (borderSide === 'r') cellEl.style.borderRight = borderStyle;
+                            if (borderSide === 'l') cellEl.style.borderLeft = borderStyle;
+                        }
                         // Set lighter region color as background
-                        const mask = region.slice(1); // e.g., for '-a', mask is 'a'
+                        const mask = region[1]; // e.g., for '-a', mask is 'a', for '-ar', mask is 'ar'
                         if (regionColors[mask]) {
-                            cellEl.style.outline = `3px solid rgba(${regionColors[mask]}, 0.75)`;
-                            cellEl.style.outlineOffset = '-3px';
+                            cellEl.style.backgroundColor = `rgba(${regionColors[mask]}, 0.6)`;
+                            // cellEl.style.outline = `3px solid rgba(${regionColors[mask[0]]}, 0.75)`;
+                            // cellEl.style.outlineOffset = '-3px';
                         }
                     } else {
                         cellEl.className += ` region-${region}`;
