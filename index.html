@@ -306,9 +306,8 @@
         <div class="controls">
             <button onclick="startPuzzle('4x5')" id="start4x5">Start 4×5 Hudoku</button>
             <button onclick="startPuzzle('6x5')" id="start6x5">Start 6×5 Hudoku</button>
-            <button onclick="getHintAndResetTimer()" id="hintBtn" style="display: none;">Get a Hint</button>
             <button onclick="showSolution()" id="solutionBtn" style="display: none;">Show Solution</button>
-            <button onclick="resetGame()" id="resetBtn" style="display: none;">End Game</button>
+            <button onclick="resetGame()" id="resetBtn" style="display: none;">Back to Menu</button>
         </div>
         
         <div id="timerContainer" style="display: none;">
@@ -885,7 +884,6 @@
         function showScoreScreen(scoreData) {
             stopTimer();
             // Hide game controls and timer when showing score
-            document.getElementById('hintBtn').style.display = 'none';
             document.getElementById('solutionBtn').style.display = 'none';
             document.getElementById('resetBtn').style.display = 'none';
             document.getElementById('timerContainer').style.display = 'none';
@@ -1027,7 +1025,6 @@
                 // Update button visibility
                 document.getElementById('start4x5').style.display = 'none';
                 document.getElementById('start6x5').style.display = 'none';
-                document.getElementById('hintBtn').style.display = 'inline-block';
                 document.getElementById('solutionBtn').style.display = 'inline-block';
                 document.getElementById('resetBtn').style.display = 'inline-block';
                 // Show timer and start it
@@ -1047,7 +1044,6 @@
             // Reset button visibility
             document.getElementById('start4x5').style.display = 'inline-block';
             document.getElementById('start6x5').style.display = 'inline-block';
-            document.getElementById('hintBtn').style.display = 'none';
             document.getElementById('solutionBtn').style.display = 'none';
             document.getElementById('resetBtn').style.display = 'none';
             // Reset solution button text
