@@ -290,31 +290,6 @@
             line-height: 1.6;
         }
         
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
-            border: 1px solid #ccc;
-        }
-        
         .stats {
             margin-top: 20px;
             text-align: center;
@@ -352,38 +327,14 @@
             <h3>🧩 Hudoku Rules</h3>
             <ul>
                 <li><strong>How to Play:</strong> Click on any '?' cell to enter a number</li>
-                <li><strong>Timer System:</strong> You start with 15 seconds. Each correct answer adds 15 seconds!</li>
+                <li><strong>Timer System:</strong> You start with 30 seconds. Each correct answer adds 10 seconds!</li>
                 <li><strong>Auto-Hints:</strong> When timer reaches 0, a hint is automatically generated (counts as a lapse)</li>
-                <li><strong>No Repeats:</strong> No number appears twice in any row, column, or lettered region</li>
-                <li><strong>Region A & C:</strong> Use numbers 1-9 (3×3 grids, 2 numbers revealed initially)</li>
-                <li><strong>Region B & D:</strong> Use numbers 1-4 (2×2 grids, 1 number revealed initially)</li>
+                <li><strong>No Repeats:</strong> No number appears twice in any row, column, or colored region</li>
+                <li><strong>Region 3x3 grids:</strong> Use numbers 1-9</li>
+                <li><strong>Region 2x2 grids:</strong> Use numbers 1-4</li>
                 <li><strong>Wrong Answer:</strong> Incorrect entries turn red and disappear after 1.5 seconds</li>
                 <li><strong>Scoring:</strong> Fast solving = higher score. Auto-hints and wrong answers = penalties!</li>
-                <li><strong>Goal:</strong> Complete both puzzles with the highest score possible!</li>
             </ul>
-        </div>
-
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-color region-a"></div>
-                <span>Region A (1-9)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color region-b"></div>
-                <span>Region B (1-4)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color region-c"></div>
-                <span>Region C (1-9)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color region-d"></div>
-                <span>Region D (1-4)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color empty"></div>
-                <span>Empty cells</span>
-            </div>
         </div>
     </div>
 
@@ -912,11 +863,11 @@
             // Time penalty: -10 points per second
             const timePenalty = totalTimeSeconds * 10;
             
-            // Lapse penalty: -500 points per auto-hint
-            const lapsePenalty = gameStats.hintsUsed * 500;
+            // Lapse penalty: -1000 points per auto-hint
+            const lapsePenalty = gameStats.hintsUsed * 1000;
             
-            // Incorrect entry penalty: -250 points per wrong answer
-            const incorrectPenalty = gameStats.incorrectEntries * 250;
+            // Incorrect entry penalty: -500 points per wrong answer
+            const incorrectPenalty = gameStats.incorrectEntries * 500;
             
             const finalScore = Math.max(0, baseScore - timePenalty - lapsePenalty - incorrectPenalty);
             
