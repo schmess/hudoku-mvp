@@ -558,10 +558,12 @@
                     }
                 }
             }
+            const initialClues = revealed.flat().filter(cell => cell !== 0 && cell !== '-').length;
             return {
                 solution,
                 revealed,
                 totalCells,
+                initialClues,
                 revealedCount: totalRevealed,
                 hintsUsed: 0,
                 emptyHints // <-- store the empty cell hints
@@ -792,11 +794,12 @@
         function calculateScore(timerExpired = false) {
             const data = currentPuzzles[currentPuzzleType];
             const totalCells = data ? data.totalCells : 0;
-            const resolved = data ? data.revealedCount : 0;
+            // Only count user-solved cells (not initial clues)
+            const resolved = data ? (data.revealedCount - data.initialClues) : 0;
             const wrong = gameStats.incorrectEntries;
             let finalScore = resolved * 500 - wrong * 1000; // 500 points per resolved cell, -1000 per wrong
             let bonus = 0;
-            if (!timerExpired && resolved === totalCells) {
+            if (!timerExpired && totalCells === resolved + data.initialClues) {
                 bonus = gameTimer * 250; // 250 points per second left if finished
                 finalScore += bonus;
             }
@@ -804,7 +807,7 @@
             return {
                 finalScore,
                 resolved,
-                totalCells,
+                totalCells: totalCells - data.initialClues,
                 incorrectEntries: wrong,
                 bonus,
                 timeLeft: gameTimer,
