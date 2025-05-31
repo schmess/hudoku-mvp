@@ -300,14 +300,17 @@
 </head>
 <body>
     <div class="container">
-        <h1>Hudoku - Half Sudoku</h1>
-        <p class="subtitle">Timed puzzle challenge with automatic hints and scoring system</p>
+        <div id="headerArea">
+            <h1>Hudoku - Half Sudoku</h1>
+            <p class="subtitle">
+                A fresh take on Sudoku with a twist.
+                Challenge your friend: Loser buys the winner a beer! (Best of 3 rounds)
+            </p>
+        </div>
         
-        <div class="controls">
+        <div class="controls" id="mainMenuControls">
             <button onclick="startPuzzle('4x5')" id="start4x5">I have 30 seconds</button>
             <button onclick="startPuzzle('6x5')" id="start6x5">I have 60 seconds</button>
-            <button onclick="showSolution()" id="solutionBtn" style="display: none;">Show Solution</button>
-            <button onclick="resetGame()" id="resetBtn" style="display: none;">Back to Menu</button>
         </div>
         
         <div id="timerContainer" style="display: none;">
@@ -318,6 +321,10 @@
         
         <div class="puzzles-container" id="puzzlesContainer">
             <!-- Puzzles will be generated here -->
+        </div>
+        
+        <div class="controls" id="gameActionControls" style="display:none; justify-content:center; margin-top:20px;">
+            <button onclick="resetGame()" id="resetBtn" style="display: none;">Back to Menu</button>
         </div>
         
         <div class="stats" id="stats"></div>
@@ -818,7 +825,6 @@
         function showScoreScreen(scoreData) {
             stopTimer();
             // Hide game controls and timer when showing score
-            document.getElementById('solutionBtn').style.display = 'none';
             document.getElementById('resetBtn').style.display = 'none';
             document.getElementById('timerContainer').style.display = 'none';
             const container = document.getElementById('puzzlesContainer');
@@ -899,7 +905,6 @@
         }
         
         function startPuzzle(puzzleType) {
-            // Only generate the selected puzzle
             let result = null;
             if (puzzleType === '4x5') {
                 result = createPuzzle(template4x5);
@@ -912,16 +917,13 @@
                 currentPuzzles = {};
                 currentPuzzles[puzzleType] = result;
                 currentPuzzleType = puzzleType;
-                // Reset stats for new game
                 gameStats.incorrectEntries = 0;
                 gameStats.totalTime = 0;
                 gameStats.resolvedCells = 0;
-                // Update button visibility
-                document.getElementById('start4x5').style.display = 'none';
-                document.getElementById('start6x5').style.display = 'none';
-                document.getElementById('solutionBtn').style.display = 'inline-block';
+                showHeader(false);
+                showMainMenuControls(false);
+                showGameActionControls(true);
                 document.getElementById('resetBtn').style.display = 'inline-block';
-                // Show timer and start it
                 document.getElementById('timerContainer').style.display = 'block';
                 startTimer();
                 updateDisplay();
@@ -932,26 +934,14 @@
             currentPuzzles = {};
             currentPuzzleType = null;
             showingSolutions = false;
-            // Reset stats for new game
             gameStats.incorrectEntries = 0;
-            // Reset button visibility
-            document.getElementById('start4x5').style.display = 'inline-block';
-            document.getElementById('start6x5').style.display = 'inline-block';
-            document.getElementById('solutionBtn').style.display = 'none';
+            showHeader(true);
+            showMainMenuControls(true);
+            showGameActionControls(false);
             document.getElementById('resetBtn').style.display = 'none';
-            // Reset solution button text
-            document.getElementById('solutionBtn').textContent = 'Show Solution';
-            // Hide timer and stop it
             document.getElementById('timerContainer').style.display = 'none';
             stopTimer();
             updateDisplay();
-        }
-        
-        function showSolution() {
-            showingSolutions = !showingSolutions;
-            updateDisplay();
-            document.getElementById('solutionBtn').textContent = 
-                showingSolutions ? 'Show Puzzle' : 'Show Solution';
         }
         
         function updateDisplay() {
@@ -961,12 +951,10 @@
             if (currentPuzzleType && currentPuzzles[currentPuzzleType]) {
                 const data = currentPuzzles[currentPuzzleType];
                 const template = currentPuzzleType === '4x5' ? template4x5 : template6x5;
-                const grid = showingSolutions ? data.solution : data.revealed;
-                const title = showingSolutions ? 
-                    `${currentPuzzleType.toUpperCase()} Solution` : 
-                    `${currentPuzzleType.toUpperCase()} Hudoku Puzzle`;
+                const grid = data.revealed;
+                const title = `${currentPuzzleType.toUpperCase()} Hudoku Puzzle`;
                 
-                container.appendChild(renderGrid(grid, template, title, !showingSolutions, data.solution));
+                container.appendChild(renderGrid(grid, template, title, true, data.solution));
 
                 if (!showingSolutions && data.revealedCount === data.totalCells) {
                     setTimeout(() => {
@@ -1003,9 +991,7 @@
                     statsText += ` | ${otherPuzzle.toUpperCase()}: ${otherPercentage}% complete`;
                 }
                 
-                if (showingSolutions) {
-                    statsText += ' | Showing solution';
-                } else if (percentage === 100) {
+                if (percentage === 100) {
                     statsText += ' | 🎉 COMPLETED!';
                 } else {
                     statsText += ' | Click cells to play!';
@@ -1048,6 +1034,18 @@
                 });
             }
         });
+        
+        function showHeader(show) {
+            document.getElementById('headerArea').style.display = show ? '' : 'none';
+        }
+        
+        function showMainMenuControls(show) {
+            document.getElementById('mainMenuControls').style.display = show ? 'flex' : 'none';
+        }
+        
+        function showGameActionControls(show) {
+            document.getElementById('gameActionControls').style.display = show ? 'flex' : 'none';
+        }
     </script>
 </body>
 </html>
