@@ -487,7 +487,7 @@
             }
         }
 
-        function getRevealedNumbersInRegion(grid, template, mask) {
+        function getNumbersInRegion(grid, template, mask) {
             const unviableClues = new Set();
             for (let r = 0; r < grid.length; r++) {
                 for (let c = 0; c < grid[r].length; c++) {
@@ -514,36 +514,6 @@
                 }
             }
             return Array.from(unviableClues);
-        }
-        
-        function solvePuzzleOld(template) {
-            const grid = template.map(row => row.map(cell => isEmptyCell(cell) ? '-' : 0));
-            
-            function backtrack() {
-                for (let row = 0; row < grid.length; row++) {
-                    for (let col = 0; col < grid[row].length; col++) {
-                        if (grid[row][col] === 0) {
-                            const region = template[row][col];
-                            const validNums = shuffle(getValidNumbers(region));
-                            
-                            for (const num of validNums) {
-                                if (isValidPlacement(grid, row, col, num, template)) {
-                                    grid[row][col] = num;
-                                    if (backtrack()) return true;
-                                    grid[row][col] = 0;
-                                }
-                            }
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-            
-            if (backtrack()) {
-                return grid;
-            }
-            return null;
         }
 
         function solvePuzzle(template, given = null) {
@@ -618,7 +588,7 @@
                         if (!unusedEmptyCellClues[mask]) unusedEmptyCellClues[mask] = new Set();
                         let shown = false;
                         // Use the same logic as before, but only once
-                        const revealedSet = getRevealedNumbersInRegion(revealed, template, mask);
+                        const revealedSet = getNumbersInRegion(revealed, template, mask);
                         const unvialbleSet = getNumbersInRowCol(solution, template, r, c);
                         for (let num = 9; num >= 1; num--) {
                             if (
@@ -1034,12 +1004,21 @@
 
             if (number !== correctNumber) {
                 // If not, try to find a new solution with the number placed
-                const testGrid = data.revealed.map(r => r.slice());
-                testGrid[row][col] = number;
-                const newSolution = solvePuzzle(template, testGrid);
-                if (newSolution) {
-                    data.solution = newSolution;
-                    correctNumber = number;
+                // check for invalid numbers
+                const mask = template[row][col];
+                const revealedSet = getNumbersInRegion(data.revealed, template, mask);
+                const unvialbleSet = getNumbersInRowCol(data.revealed, template, row, col);
+                const numberInvalid = revealedSet.includes(number) || unvialbleSet.includes(number);
+                // if the number is not invalid, try to find a new solution
+                if (!numberInvalid) {
+                    const testGrid = data.revealed.map(r => r.slice());
+                    testGrid[row][col] = number;
+                    const newSolution = solvePuzzle(template, testGrid);
+                    if (newSolution) {
+                        data.solution = newSolution;
+                        console.log('debug', { testGrid, newSolution });
+                        correctNumber = number;
+                    }
                 }
             }
 
