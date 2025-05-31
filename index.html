@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Half Sudoku (Hudoku) Generator</title>
+    <title>Hudoku / Half Sudoku</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -300,12 +300,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Half Sudoku Generator</h1>
+        <h1>Hudoku - Half Sudoku</h1>
         <p class="subtitle">Timed puzzle challenge with automatic hints and scoring system</p>
         
         <div class="controls">
-            <button onclick="startPuzzle('4x5')" id="start4x5">Start 4×5 Hudoku</button>
-            <button onclick="startPuzzle('6x5')" id="start6x5">Start 6×5 Hudoku</button>
+            <button onclick="startPuzzle('4x5')" id="start4x5">I have 30 seconds</button>
+            <button onclick="startPuzzle('6x5')" id="start6x5">I have 60 seconds</button>
             <button onclick="showSolution()" id="solutionBtn" style="display: none;">Show Solution</button>
             <button onclick="resetGame()" id="resetBtn" style="display: none;">Back to Menu</button>
         </div>
@@ -326,13 +326,13 @@
             <h3>🧩 Hudoku Rules</h3>
             <ul>
                 <li><strong>How to Play:</strong> Click on any '?' cell to enter a number</li>
-                <li><strong>Timer System:</strong> You start with 30 seconds. Each correct answer adds 10 seconds!</li>
-                <li><strong>Auto-Hints:</strong> When timer reaches 0, a hint is automatically generated (counts as a lapse)</li>
+                <li><strong>Timer System:</strong> You start with 30 seconds (4x5) or 60 seconds (6x5). Each correct answer adds 2 seconds!</li>
+                <li><strong>Game End:</strong> When timer reaches 0, the game ends and you are scored for how many cells you resolved.</li>
                 <li><strong>No Repeats:</strong> No number appears twice in any row, column, or colored region</li>
                 <li><strong>Region 3x3 grids:</strong> Use numbers 1-9</li>
                 <li><strong>Region 2x2 grids:</strong> Use numbers 1-4</li>
-                <li><strong>Wrong Answer:</strong> Incorrect entries turn red and disappear after 1.5 seconds</li>
-                <li><strong>Scoring:</strong> Fast solving = higher score. Auto-hints and wrong answers = penalties!</li>
+                <li><strong>Wrong Answer:</strong> Incorrect entries turn red and disappear after 1.5 seconds (penalty applied)</li>
+                <li><strong>Scoring:</strong> More cells solved = higher score. Wrong answers = penalties. If you finish, you get a bonus for time left!</li>
             </ul>
         </div>
     </div>
@@ -367,9 +367,9 @@
         let timerInterval = null; // Timer interval reference
         let timerPaused = false; // Track if timer is paused
         let gameStats = {
-            hintsUsed: 0,        // Number of times timer ran out
             incorrectEntries: 0, // Number of wrong answers
-            totalTime: 0      // Total game time in seconds
+            totalTime: 0,        // Total game time in seconds
+            resolvedCells: 0     // Number of cells resolved
         };
         
         const HINTS_PER_REGION = {
@@ -674,7 +674,6 @@
         
         function startTimer() {
             gameStartTime = Date.now();
-            gameTimer = 30;
             updateTimerDisplay();
             timerPaused = false;
             if (timerInterval) clearInterval(timerInterval);
@@ -683,8 +682,9 @@
                     gameTimer--;
                     updateTimerDisplay();
                     if (gameTimer <= 0) {
-                        // Timer expired - generate auto hint
-                        autoHint();
+                        // Timer expired - end game
+                        stopTimer();
+                        showScoreScreen(calculateScore(true));
                     }
                 }
             }, 1000);
@@ -698,7 +698,7 @@
         }
         
         function addTimeBonus() {
-            gameTimer = Math.max(gameTimer + 10, 30); // Add 10 seconds for correct answer
+            gameTimer = Math.max(gameTimer + 2, 0); // Add 2 seconds for correct answer
             updateTimerDisplay();
         }
         
@@ -789,95 +789,26 @@
             showOnlyPossibleNumbers = false;
         }
         
-        function autoHint() {
-            if (!currentPuzzleType || !currentPuzzles[currentPuzzleType]) {
-                return;
-            }
-            
+        function calculateScore(timerExpired = false) {
             const data = currentPuzzles[currentPuzzleType];
-            const template = currentPuzzleType === '4x5' ? template4x5 : template6x5;
-            
-            // Find all unrevealed cells in current puzzle
-            const unrevealedCells = [];
-            for (let r = 0; r < data.revealed.length; r++) {
-                for (let c = 0; c < data.revealed[r].length; c++) {
-                    if (!isEmptyCell(template[r][c]) && data.revealed[r][c] === 0) {
-                        unrevealedCells.push([r, c]);
-                    }
-                }
+            const totalCells = data ? data.totalCells : 0;
+            const resolved = data ? data.revealedCount : 0;
+            const wrong = gameStats.incorrectEntries;
+            let finalScore = resolved * 500 - wrong * 1000; // 500 points per resolved cell, -1000 per wrong
+            let bonus = 0;
+            if (!timerExpired && resolved === totalCells) {
+                bonus = gameTimer * 250; // 250 points per second left if finished
+                finalScore += bonus;
             }
-            
-            if (unrevealedCells.length === 0) {
-                // Puzzle complete, stop timer
-                stopTimer();
-                return;
-            }
-            
-            // Prefer lastActiveCell if it's an unrevealed cell in the current puzzle
-            let target = null;
-            if (lastActiveCell && lastActiveCell.puzzleType === currentPuzzleType) {
-                const { row, col } = lastActiveCell;
-                if (data.revealed[row][col] === 0 && !isEmptyCell(template[row][col])) {
-                    target = [row, col];
-                }
-            }
-            // Otherwise pick random
-            if (!target) {
-                const randomIndex = Math.floor(Math.random() * unrevealedCells.length);
-                target = unrevealedCells[randomIndex];
-            }
-            const [r, c] = target;
-            
-            data.revealed[r][c] = data.solution[r][c];
-            data.revealedCount++;
-            data.hintsUsed++;
-            gameStats.hintsUsed++;
-            
-            // Reset timer after auto hint
-            gameTimer = 30;
-            updateTimerDisplay();
-            updateDisplay();
-            
-            // Flash a message
-            showAutoHintMessage();
-        }
-        
-        function showAutoHintMessage() {
-            const timerDisplayEl = document.getElementById('timerDisplay');
-            const originalText = timerDisplayEl.innerHTML;
-            
-            timerDisplayEl.innerHTML = '💡 Auto-Hint Generated! +15s';
-            timerDisplayEl.style.background = 'linear-gradient(45deg, #f39c12, #e67e22)';
-            
-            setTimeout(() => {
-                timerDisplayEl.innerHTML = originalText;
-                updateTimerDisplay(); // This will restore proper styling
-            }, 2000);
-        }
-        
-        function calculateScore() {
-            const totalTimeSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
-            const baseScore = 10000; // Base score
-            
-            // Time penalty: -10 points per second
-            const timePenalty = totalTimeSeconds * 10;
-            
-            // Lapse penalty: -1000 points per auto-hint
-            const lapsePenalty = gameStats.hintsUsed * 1000;
-            
-            // Incorrect entry penalty: -500 points per wrong answer
-            const incorrectPenalty = gameStats.incorrectEntries * 500;
-            
-            const finalScore = Math.max(0, baseScore - timePenalty - lapsePenalty - incorrectPenalty);
-            
+            if (finalScore < 0) finalScore = 0;
             return {
                 finalScore,
-                totalTime: totalTimeSeconds,
-                hintsUsed: gameStats.hintsUsed,
-                incorrectEntries: gameStats.incorrectEntries,
-                timePenalty,
-                lapsePenalty,
-                incorrectPenalty
+                resolved,
+                totalCells,
+                incorrectEntries: wrong,
+                bonus,
+                timeLeft: gameTimer,
+                timerExpired
             };
         }
         
@@ -891,48 +822,30 @@
             container.innerHTML = '';
             const scoreEl = document.createElement('div');
             scoreEl.className = 'score-display';
-            const minutes = Math.floor(scoreData.totalTime / 60);
-            const seconds = scoreData.totalTime % 60;
-            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            let gradeText = '';
-            if (scoreData.finalScore >= 9000) gradeText = '🏆 MASTER';
-            else if (scoreData.finalScore >= 8250) gradeText = '🥇 EXPERT';
-            else if (scoreData.finalScore >= 7500) gradeText = '🥈 SKILLED';
-            else if (scoreData.finalScore >= 6500) gradeText = '🥉 NOVICE';
-            else gradeText = '📚 LEARNING';
+            let bonusText = '';
+            if (scoreData.bonus > 0) {
+                bonusText = `<div class="score-item"><div class="score-label">Time Bonus</div><div class="score-value">+${scoreData.bonus}</div></div>`;
+            }
+            let timerText = scoreData.timerExpired ? '<div style="color:#e74c3c;">⏰ Timer expired!</div>' : '';
             scoreEl.innerHTML = `
-                <div class="score-title">🎉 Puzzle Complete! ${gradeText}</div>
+                <div class="score-title">🎉 Game Over!</div>
                 <div style="font-size: 2em; color: #e74c3c; margin: 10px 0; font-weight: bold;">
                     Score: ${scoreData.finalScore}
                 </div>
                 <div class="score-details">
                     <div class="score-item">
-                        <div class="score-label">Total Time</div>
-                        <div class="score-value">${timeString}</div>
-                    </div>
-                    <div class="score-item">
-                        <div class="score-label">Hints</div>
-                        <div class="score-value">${scoreData.hintsUsed}</div>
+                        <div class="score-label">Cells Solved</div>
+                        <div class="score-value">${scoreData.resolved}/${scoreData.totalCells}</div>
                     </div>
                     <div class="score-item">
                         <div class="score-label">Wrong Entries</div>
                         <div class="score-value">${scoreData.incorrectEntries}</div>
                     </div>
-                    <div class="score-item">
-                        <div class="score-label">Time Penalty</div>
-                        <div class="score-value">-${scoreData.timePenalty}</div>
-                    </div>
-                    <div class="score-item">
-                        <div class="score-label">Hint Penalty</div>
-                        <div class="score-value">-${scoreData.lapsePenalty}</div>
-                    </div>
-                    <div class="score-item">
-                        <div class="score-label">Error Penalty</div>
-                        <div class="score-value">-${scoreData.incorrectPenalty}</div>
-                    </div>
+                    ${bonusText}
                 </div>
+                ${timerText}
                 <div style="margin-top: 15px; color: #7f8c8d; font-style: italic;">
-                    💡 Faster solving, fewer auto-hints, and fewer mistakes = higher score!
+                    💡 Solve more cells and finish faster for a higher score!
                 </div>
                 <button id="backToMenuBtn" style="margin-top: 25px; padding: 12px 32px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Back to Menu</button>
             `;
@@ -945,64 +858,40 @@
 
         function handleNumberInput(number) {
             if (!selectedCell) return;
+            if (gameTimer <= 0) return; // Timer expired, do not process input
             const { puzzleType, row, col } = selectedCell;
             const data = currentPuzzles[puzzleType];
             const template = puzzleType === '4x5' ? template4x5 : template6x5;
             let correctNumber = data.solution[row][col];
             hideNumberInput();
-
             if (number !== correctNumber) {
-                // If not, try to find a new solution with the number placed
-                // check for invalid numbers
-                const mask = template[row][col];
-                const revealedSet = getNumbersInRegion(data.revealed, template, mask);
-                const unvialbleSet = getNumbersInRowCol(data.revealed, template, row, col);
-                const numberInvalid = revealedSet.includes(number) || unvialbleSet.includes(number);
-                // if the number is not invalid, try to find a new solution
-                if (!numberInvalid) {
-                    const testGrid = data.revealed.map(r => r.slice());
-                    testGrid[row][col] = number;
-                    const newSolution = solvePuzzle(template, testGrid);
-                    if (newSolution) {
-                        data.solution = newSolution;
-                        console.log('debug', { testGrid, newSolution });
-                        correctNumber = number;
-                    }
-                }
-            }
-
-
-            // 1. If the number matches the current solution, accept it
-            if (number === correctNumber) {
-                addTimeBonus();
-                data.revealed[row][col] = number;
-                data.revealedCount++;
-                updateTimerDisplay();
-                updateDisplay();
-                if (data.revealedCount === data.totalCells) {
+                gameStats.incorrectEntries++;
+                const cellElement = document.querySelector(`[data-puzzle="${puzzleType}"][data-row="${row}"][data-col="${col}"]`);
+                if (cellElement) {
+                    cellElement.textContent = number;
+                    cellElement.classList.add('wrong');
                     setTimeout(() => {
-                        const scoreData = calculateScore();
-                        showScoreScreen(scoreData);
-                        saveScoreToLocalStorage(scoreData);
-                    }, 100);
+                        cellElement.textContent = '?';
+                        cellElement.classList.remove('wrong');
+                    }, 1500);
+                    showOnlyPossibleNumbers = true;
+                    showNumberInput(puzzleType, row, col);
                 }
                 return;
             }
-
-
-            // 2. Otherwise, treat as error
-            gameTimer = 30;
-            gameStats.incorrectEntries++;
-            const cellElement = document.querySelector(`[data-puzzle=\"${puzzleType}\"][data-row=\"${row}\"][data-col=\"${col}\"]`);
-            if (cellElement) {
-                cellElement.textContent = number;
-                cellElement.classList.add('wrong');
+            // Correct answer
+            addTimeBonus();
+            data.revealed[row][col] = number;
+            data.revealedCount++;
+            gameStats.resolvedCells = data.revealedCount;
+            updateTimerDisplay();
+            updateDisplay();
+            if (data.revealedCount === data.totalCells) {
                 setTimeout(() => {
-                    cellElement.textContent = '?';
-                    cellElement.classList.remove('wrong');
-                }, 1500);
-                showOnlyPossibleNumbers = true;
-                showNumberInput(puzzleType, row, col);
+                    const scoreData = calculateScore(false);
+                    showScoreScreen(scoreData);
+                    saveScoreToLocalStorage(scoreData);
+                }, 100);
             }
         }
         
@@ -1011,17 +900,19 @@
             let result = null;
             if (puzzleType === '4x5') {
                 result = createPuzzle(template4x5);
+                gameTimer = 30;
             } else {
                 result = createPuzzle(template6x5);
+                gameTimer = 60;
             }
             if (result) {
                 currentPuzzles = {};
                 currentPuzzles[puzzleType] = result;
                 currentPuzzleType = puzzleType;
                 // Reset stats for new game
-                gameStats.hintsUsed = 0;
                 gameStats.incorrectEntries = 0;
                 gameStats.totalTime = 0;
+                gameStats.resolvedCells = 0;
                 // Update button visibility
                 document.getElementById('start4x5').style.display = 'none';
                 document.getElementById('start6x5').style.display = 'none';
@@ -1039,7 +930,6 @@
             currentPuzzleType = null;
             showingSolutions = false;
             // Reset stats for new game
-            gameStats.hintsUsed = 0;
             gameStats.incorrectEntries = 0;
             // Reset button visibility
             document.getElementById('start4x5').style.display = 'inline-block';
@@ -1051,36 +941,6 @@
             // Hide timer and stop it
             document.getElementById('timerContainer').style.display = 'none';
             stopTimer();
-            updateDisplay();
-        }
-        
-        function getHint() {
-            if (!currentPuzzleType || !currentPuzzles[currentPuzzleType]) {
-                alert('Start a puzzle first!');
-                return;
-            }
-            const data = currentPuzzles[currentPuzzleType];
-            const template = currentPuzzleType === '4x5' ? template4x5 : template6x5;
-            // Find all unrevealed cells in current puzzle
-            const unrevealedCells = [];
-            for (let r = 0; r < data.revealed.length; r++) {
-                for (let c = 0; c < data.revealed[r].length; c++) {
-                    if (!isEmptyCell(template[r][c]) && data.revealed[r][c] === 0) {
-                        unrevealedCells.push([r, c]);
-                    }
-                }
-            }
-            if (unrevealedCells.length === 0) {
-                alert('This puzzle is already complete!');
-                return;
-            }
-            // Randomly reveal one unrevealed cell
-            const randomIndex = Math.floor(Math.random() * unrevealedCells.length);
-            const [r, c] = unrevealedCells[randomIndex];
-            data.revealed[r][c] = data.solution[r][c];
-            data.revealedCount++;
-            data.hintsUsed++;
-            gameStats.hintsUsed++; // <-- increment hintsUsed for manual hint
             updateDisplay();
         }
         
@@ -1107,7 +967,7 @@
 
                 if (!showingSolutions && data.revealedCount === data.totalCells) {
                     setTimeout(() => {
-                        const scoreData = calculateScore();
+                        const scoreData = calculateScore(false);
                         showScoreScreen(scoreData);
                         saveScoreToLocalStorage(scoreData);
                     }, 100);
@@ -1152,12 +1012,6 @@
             } else {
                 statsEl.textContent = 'Choose a puzzle size to start your timed Hudoku challenge!';
             }
-        }
-        
-        function getHintAndResetTimer() {
-            getHint();
-            gameTimer = 30;
-            updateTimerDisplay();
         }
         
         // Helper to save score to localStorage with day of week key
