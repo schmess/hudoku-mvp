@@ -232,12 +232,6 @@ function createPuzzle(template) {
 }
 
 function renderGrid(grid, template, title, isPuzzle, solution) {
-    const regionColors = {
-        a: '190, 227, 248',   // #bee3f8
-        b: '251, 182, 206',   // #fbb6ce
-        c: '198, 246, 213',   // #c6f6d5
-        d: '254, 215, 170'    // #fed7aa
-    };
     const section = document.createElement('div');
     section.className = 'puzzle-section';
     /*
@@ -285,8 +279,6 @@ function renderGrid(grid, template, title, isPuzzle, solution) {
                 const data = currentPuzzles[currentPuzzleType];
                 const hint = data && data.emptyHints ? data.emptyHints[`${r},${c}`] : '-';
                 cellEl.textContent = hint;
-                cellEl.style.fontSize = '0.9em';
-                cellEl.style.color = '#b7791f';
                 // Border logic for third letter
                 if (region.length > 2) {
                     const borderSide = region[2];
@@ -298,17 +290,15 @@ function renderGrid(grid, template, title, isPuzzle, solution) {
                 }
                 // Set lighter region color as background
                 const mask = region[1]; // e.g., for '-a', mask is 'a', for '-ar', mask is 'ar'
-                if (regionColors[mask]) {
-                    cellEl.style.backgroundColor = `rgba(${regionColors[mask]}, 0.6)`;
-                    // cellEl.style.outline = `3px solid rgba(${regionColors[mask[0]]}, 0.75)`;
-                    // cellEl.style.outlineOffset = '-3px';
+                if (mask) {
+                    cellEl.className += ` region-${mask}`;
                 }
             } else {
                 cellEl.className += ` region-${region}`;
                 if (cell === 0 && isPuzzle) {
                     // Empty cell that can be clicked
                     cellEl.textContent = '?';
-                    cellEl.style.color = '#a0aec0';
+                    // cellEl.style.color = '#a0aec0';
                     cellEl.className += ' clickable';
                     cellEl.onclick = () => showNumberInput(currentPuzzleType, r, c);
                     cellEl.onmouseenter = () => { lastActiveCell = { puzzleType: currentPuzzleType, row: r, col: c }; };

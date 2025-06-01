@@ -117,7 +117,7 @@ button:hover {
 }
 
 .cell:hover:not(.empty):not(.given) {
-    background: #ffe066;
+    opacity: 0.8;
     transform: scale(1.07);
 }
 
@@ -277,11 +277,11 @@ button:hover {
     margin-top: 5px;
 }
 
-.region-a { background-color: #4fc3f7 !important; color: #1a2236 !important; }
-.region-b { background-color: #ffb6b9 !important; color: #1a2236 !important; }
-.region-c { background-color: #70e3b0 !important; color: #1a2236 !important; }
-.region-d { background-color: #ffd86b !important; color: #1a2236 !important; }
-.empty { background-color: #222e50 !important; color: #ffe066 !important; }
+.region-a { background-color: #4fc3f7; color: #1a2236; }
+.region-b { background-color: #ffb6b9; color: #1a2236; }
+.region-c { background-color: #70e3b0; color: #1a2236; }
+.region-d { background-color: #ffd86b; color: #1a2236; }
+.empty { color: #b7791f; font-size: 0.9em; opacity: 0.9; }
 
 .content-section {
     margin-top: 30px;
