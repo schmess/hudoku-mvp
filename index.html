@@ -7,76 +7,74 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div id="headerArea">
-            <h1>Hudoku - Half Sudoku</h1>
-            <div class="subtitle">
-                Arrr! The legendary treasure hunt for the sharpest mind on the seven seas 🏴‍☠️
-            </div>
-        </div>
-        
-        <div class="controls" id="mainMenuControls">
-            <button onclick="startPuzzle('4x5')" id="start4x5">I have 30 seconds</button>
-            <button onclick="startPuzzle('6x5')" id="start6x5">I have 60 seconds</button>
-        </div>
-
-        <div class="stats" id="stats"></div>
-        
-        <div class="content-section">
-            <div class="section-header">The Legend of Captain Numberskull's Treasure:</div>
-            <div class="section-content">
-                Long ago, the infamous pirate Captain Numberskull discovered that the smartest crew member could navigate treacherous waters faster than any compass. Before each raid, his crew would gather 'round and solve number puzzles to determine who got the finest rum from their shared treasure chest!
-            </div>
-        </div>
-
-        <div class="content-section">
-            <div class="section-header">How Ye Play, Matey:</div>
-            <div class="section-content">
-                <ul style="margin: 0 0 0 18px; padding:0; font-size:1.05em; list-style:disc;">
-                    <li>Gather yer crew and everyone tosses some doubloons in the jar</li>
-                    <li>Start the challenge on "1-2-3!" like proper pirates</li>
-                    <li>Fastest solver with the highest score claims the booty</li>
-                    <li>Winner gets their grog paid for from the crew's treasure pot</li>
-                    <li>Perfect for when ye need to prove who's got the sharpest cutlass... er, mind!</li>
-                </ul>
-            </div>
-        </div>
-
-        <div id="timerContainer" style="display: none;">
-            <div class="timer-display" id="timerDisplay">
-                ⏰ Time Remaining: <span id="timerValue">15</span>s
-            </div>
-        </div>
-        
-        <div class="puzzles-container" id="puzzlesContainer">
-            <!-- Puzzles will be generated here -->
-        </div>
-        
-        <div class="controls" id="gameActionControls" style="display:none; justify-content:center; margin-top:20px;">
-            <button onclick="resetGame()" id="resetBtn" style="display: none;">Back to Menu</button>
-        </div>
-    
-        <div class="content-section">
-            <h2 class="section-header">⚓ Captain's Orders (Game Rules)</h2>
-            <div class="section-content">
-                <div style="font-size:1em; margin-bottom:10px;">
-                    Know yer Sudoku basics? Good! If not, <a href="https://www.youtube.com/watch?v=kvShKsHNqWc" target="_blank" style="color:#e09b2d; text-decoration:underline;">watch this quick tutorial</a> before ye embarrass yerself, ye landlubber!
+    <div id="introScreen">
+        <div class="container">
+            <div id="headerArea">
+                <h1>Hudoku - Half Sudoku</h1>
+                <div class="subtitle">
+                    Arrr! The legendary treasure hunt for the sharpest mind on the seven seas 🏴‍☠️
                 </div>
-                <div style="color:#e0eafc;">
-                    <div style="font-weight:bold; margin-bottom:6px;">Hudoku Twists (Pay attention, ye scurvy dogs!):</div>
-                    <ul style="margin: 0 0 0 18px; padding:0;">
-                        <li>🏴‍☠️ <strong>Cursed Regions:</strong> Unlike regular Sudoku, our treasure maps have <strong>negative regions</strong> (marked with dark colors). These cursed areas work backwards - avoid repeating numbers here too!</li>
-                        <li>🏴‍☠️ <strong>Two Map Sizes:</strong>
-                            <ul style="margin: 4px 0 0 18px;">
-                                <li><strong>Quick Raid (4x5):</strong> 30 seconds to prove yer worth</li>
-                                <li><strong>Epic Voyage (6x5):</strong> 60 seconds for the bold and foolhardy</li>
-                            </ul>
-                        </li>
-                        <li>🏴‍☠️ <strong>Time be Tickin':</strong> Each correct answer adds 2 precious seconds to yer hourglass!</li>
-                        <li>🏴‍☠️ <strong>Wrong Moves:</strong> Mess up and yer number turns red before vanishing like a ghost ship. Penalties apply, ye fool!</li>
-                        <li>🏴‍☠️ <strong>Victory Conditions:</strong> Most cells solved when time runs out wins the treasure. Finish early? Bonus points for leftover time, savvy?</li>
+            </div>
+            <div class="controls" id="mainMenuControls">
+                <button onclick="startPuzzle('4x5')" id="start4x5">I have 30 seconds</button>
+                <button onclick="startPuzzle('6x5')" id="start6x5">I have 60 seconds</button>
+            </div>
+            <div class="content-section">
+                <div class="section-header">The Legend of Captain Numberskull's Treasure:</div>
+                <div class="section-content">
+                    Long ago, the infamous pirate Captain Numberskull discovered that the smartest crew member could navigate treacherous waters faster than any compass. Before each raid, his crew would gather 'round and solve number puzzles to determine who got the finest rum from their shared treasure chest!
+                </div>
+            </div>
+            <div class="content-section">
+                <div class="section-header">How Ye Play, Matey:</div>
+                <div class="section-content">
+                    <ul style="margin: 0 0 0 18px; padding:0; font-size:1.05em; list-style:disc;">
+                        <li>Gather yer crew and everyone tosses some doubloons in the jar</li>
+                        <li>Start the challenge on "1-2-3!" like proper pirates</li>
+                        <li>Fastest solver with the highest score claims the booty</li>
+                        <li>Winner gets their grog paid for from the crew's treasure pot</li>
+                        <li>Perfect for when ye need to prove who's got the sharpest cutlass... er, mind!</li>
                     </ul>
                 </div>
+            </div>
+            <div class="content-section">
+                <h2 class="section-header">⚓ Captain's Orders (Game Rules)</h2>
+                <div class="section-content">
+                    <div style="font-size:1em; margin-bottom:10px;">
+                        Know yer Sudoku basics? Good! If not, <a href="https://www.youtube.com/watch?v=kvShKsHNqWc" target="_blank" style="color:#e09b2d; text-decoration:underline;">watch this quick tutorial</a> before ye embarrass yerself, ye landlubber!
+                    </div>
+                    <div style="color:#e0eafc;">
+                        <div style="font-weight:bold; margin-bottom:6px;">Hudoku Twists (Pay attention, ye scurvy dogs!):</div>
+                        <ul style="margin: 0 0 0 18px; padding:0;">
+                            <li>🏴‍☠️ <strong>Cursed Regions:</strong> Unlike regular Sudoku, our treasure maps have <strong>negative regions</strong> (marked with dark colors). These cursed areas work backwards - avoid repeating numbers here too!</li>
+                            <li>🏴‍☠️ <strong>Two Map Sizes:</strong>
+                                <ul style="margin: 4px 0 0 18px;">
+                                    <li><strong>Quick Raid (4x5):</strong> 30 seconds to prove yer worth</li>
+                                    <li><strong>Epic Voyage (6x5):</strong> 60 seconds for the bold and foolhardy</li>
+                                </ul>
+                            </li>
+                            <li>🏴‍☠️ <strong>Time be Tickin':</strong> Each correct answer adds 2 precious seconds to yer hourglass!</li>
+                            <li>🏴‍☠️ <strong>Wrong Moves:</strong> Mess up and yer number turns red before vanishing like a ghost ship. Penalties apply, ye fool!</li>
+                            <li>🏴‍☠️ <strong>Victory Conditions:</strong> Most cells solved when time runs out wins the treasure. Finish early? Bonus points for leftover time, savvy?</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="gameScreen" style="display:none;">
+        <div class="container">
+            <div class="stats" id="stats"></div>
+            <div id="timerContainer" style="display: none;">
+                <div class="timer-display" id="timerDisplay">
+                    ⏰ Time Remaining: <span id="timerValue">15</span>s
+                </div>
+            </div>
+            <div class="puzzles-container" id="puzzlesContainer">
+                <!-- Puzzles will be generated here -->
+            </div>
+            <div class="controls" id="gameActionControls" style="display:none; justify-content:center; margin-top:20px;">
+                <button onclick="resetGame()" id="resetBtn" style="display: none;">Back to Menu</button>
             </div>
         </div>
     </div>
@@ -674,15 +672,13 @@
                 gameStats.incorrectEntries = 0;
                 gameStats.totalTime = 0;
                 gameStats.resolvedCells = 0;
-                showHeader(false);
-                showMainMenuControls(false);
                 showGameActionControls(true);
                 document.getElementById('resetBtn').style.display = 'inline-block';
                 document.getElementById('timerContainer').style.display = 'block';
-                // Hide all content-section elements
-                document.querySelectorAll('.content-section').forEach(el => el.style.display = 'none');
                 startTimer();
                 updateDisplay();
+                document.getElementById('introScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = '';
             }
         }
         
@@ -691,15 +687,13 @@
             currentPuzzleType = null;
             showingSolutions = false;
             gameStats.incorrectEntries = 0;
-            showHeader(true);
-            showMainMenuControls(true);
             showGameActionControls(false);
             document.getElementById('resetBtn').style.display = 'none';
             document.getElementById('timerContainer').style.display = 'none';
             stopTimer();
-            // Show all content-section elements
-            document.querySelectorAll('.content-section').forEach(el => el.style.display = '');
             updateDisplay();
+            document.getElementById('introScreen').style.display = '';
+            document.getElementById('gameScreen').style.display = 'none';
         }
         
         function updateDisplay() {
@@ -793,14 +787,6 @@
                 });
             }
         });
-        
-        function showHeader(show) {
-            document.getElementById('headerArea').style.display = show ? '' : 'none';
-        }
-        
-        function showMainMenuControls(show) {
-            document.getElementById('mainMenuControls').style.display = show ? 'flex' : 'none';
-        }
         
         function showGameActionControls(show) {
             document.getElementById('gameActionControls').style.display = show ? 'flex' : 'none';
