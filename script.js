@@ -507,6 +507,14 @@ function showScoreScreen(scoreData) {
     }
     let timerText = scoreData.timerExpired ? '<div style="color:#e74c3c;">⏰ Timer expired!</div>' : '';
     let pausedText = scoreData.paused ? '<div style="color:#e74c3c;">⏸️ Timer was paused — Score is 0!</div>' : '';
+    // Format gameStartTime as HH:MM (24-hour)
+    let startedTimeText = '';
+    if (gameStartTime) {
+        const startDate = new Date(gameStartTime);
+        const hours = startDate.getHours().toString().padStart(2, '0');
+        const minutes = startDate.getMinutes().toString().padStart(2, '0');
+        startedTimeText = `<div class=\"score-item\"><div class=\"score-label\">Game Started</div><div class=\"score-value\">${hours}:${minutes}</div></div>`;
+    }
     scoreEl.innerHTML = `
         <div class="score-title">🎉 Game Over!</div>
         <div style="font-size: 2em; color: #e74c3c; margin: 10px 0; font-weight: bold;">
@@ -522,6 +530,7 @@ function showScoreScreen(scoreData) {
                 <div class="score-value">${scoreData.incorrectEntries || 0}</div>
             </div>
             ${bonusText}
+            ${startedTimeText}
         </div>
         ${timerText}
         ${pausedText}
