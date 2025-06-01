@@ -240,10 +240,12 @@ function renderGrid(grid, template, title, isPuzzle, solution) {
     };
     const section = document.createElement('div');
     section.className = 'puzzle-section';
+    /*
     const titleEl = document.createElement('div');
     titleEl.className = 'puzzle-title';
     titleEl.textContent = title;
     section.appendChild(titleEl);
+    */
     // Add progress and switch info for puzzles
     if (isPuzzle && currentPuzzleType) {
         const data = currentPuzzles[currentPuzzleType];

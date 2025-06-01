@@ -360,3 +360,18 @@ button:hover {
     z-index: 3;
     position: relative;
 } 
+
+#gameScreen {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: 20px;
+}
+
+#gameScreen .container {
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
