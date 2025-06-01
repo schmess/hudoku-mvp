@@ -251,7 +251,7 @@ function renderGrid(grid, template, title, isPuzzle, solution) {
         const data = currentPuzzles[currentPuzzleType];
         const percentage = Math.round((data.revealedCount / data.totalCells) * 100);
         const progressEl = document.createElement('div');
-        progressEl.style.cssText = 'font-size: 0.9em; color: #666; margin-bottom: 10px; font-weight: normal;';
+        progressEl.style.cssText = 'font-size: 0.9em; color: #ffffff80; margin-bottom: 10px; font-weight: normal;';
         progressEl.textContent = `${data.revealedCount}/${data.totalCells} revealed (${percentage}%)`;
         if (data.hintsUsed > 0) {
             progressEl.textContent += ` • ${data.hintsUsed} hints used`;
@@ -381,7 +381,7 @@ function updateTimerDisplay() {
         // Update timer styling based on remaining time
         timerDisplayEl.className = 'timer-display';
         if (!timerPaused) {
-            if (gameTimer <= 2) {
+            if (gameTimer <= 3) {
                 timerDisplayEl.className += ' timer-critical';
             } else if (gameTimer <= 10) {
                 timerDisplayEl.className += ' timer-warning';
@@ -636,43 +636,6 @@ function updateDisplay() {
             }, 100);
         }
     }
-    
-    updateStats();
-}
-
-function updateStats() {
-    const statsEl = document.getElementById('stats');
-    
-    if (currentPuzzleType && currentPuzzles[currentPuzzleType]) {
-        const data = currentPuzzles[currentPuzzleType];
-        const percentage = Math.round((data.revealedCount / data.totalCells) * 100);
-        let statsText = `${currentPuzzleType.toUpperCase()}: ${data.revealedCount}/${data.totalCells} revealed (${percentage}%)`;
-        
-        if (data.hintsUsed > 0) {
-            statsText += ` • ${data.hintsUsed} hints used`;
-        }
-        
-        if (gameStats.incorrectEntries > 0) {
-            statsText += ` • Wrong entries: ${gameStats.incorrectEntries}`;
-        }
-        
-        const otherPuzzle = currentPuzzleType === '4x5' ? '6x5' : '4x5';
-        const otherData = currentPuzzles[otherPuzzle];
-        if (otherData) {
-            const otherPercentage = Math.round((otherData.revealedCount / otherData.totalCells) * 100);
-            statsText += ` | ${otherPuzzle.toUpperCase()}: ${otherPercentage}% complete`;
-        }
-        
-        if (percentage === 100) {
-            statsText += ' | 🎉 COMPLETED!';
-        } else {
-            statsText += ' | Click cells to play!';
-        }
-        
-        statsEl.textContent = statsText;
-    } else {
-        statsEl.textContent = 'Choose a puzzle size to start your timed Hudoku challenge!';
-    }
 }
 
 // Helper to save score to localStorage with day of week key
@@ -682,9 +645,6 @@ function saveScoreToLocalStorage(scoreData) {
     const dayKey = days[now.getDay()];
     localStorage.setItem(`hudoku_score_${dayKey}`, JSON.stringify(scoreData));
 }
-
-// Initialize the interface
-updateStats();
 
 // Add keyboard support
 document.addEventListener('keydown', (e) => {

@@ -2,7 +2,6 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
     background: linear-gradient(135deg, #0a2342 0%, #145374 60%, #00334e 100%);
     min-height: 100vh;
     color: #e0eafc;
@@ -66,14 +65,16 @@ button:hover {
     gap: 40px;
     justify-content: center;
     flex-wrap: wrap;
+    background: transparent;
+    border-radius: 18px;
+    padding: 20px 0;
 }
 
 .puzzle-section {
     text-align: center;
-    background: #1e2a78;
+    background: transparent;
     padding: 25px;
-    border-radius: 18px;
-    box-shadow: 0 4px 24px rgba(30,42,120,0.10);
+    border: none;
 }
 
 .puzzle-title {
@@ -336,7 +337,7 @@ button:hover {
 #introScreen .container {
     position: relative;
     z-index: 2;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 20px 40px rgba(0,0,0,0);
     border-radius: 15px;
     background: rgba(10, 35, 66, 0.1);
     /* backdrop-filter: blur(2px) saturate(1.2); */
@@ -374,4 +375,5 @@ button:hover {
     height: calc(100% - 60px);
     overflow-y: auto;
     overflow-x: hidden;
+    background: linear-gradient(45deg, #145374, #00334e);
 }
