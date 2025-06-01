@@ -4,315 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hudoku / Half Sudoku</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-        
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            text-align: center;
-            color: #4a5568;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #718096;
-            margin-bottom: 30px;
-            font-style: italic;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .puzzles-container {
-            display: flex;
-            gap: 40px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .puzzle-section {
-            text-align: center;
-            background: #f8fafc;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        }
-        
-        .puzzle-title {
-            font-size: 1.4em;
-            margin-bottom: 15px;
-            color: #2d3748;
-            font-weight: 600;
-        }
-        
-        .grid {
-            display: inline-block;
-            border: 3px solid #2d3748;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 10px;
-            background: white;
-        }
-        
-        .grid-row {
-            display: flex;
-        }
-        
-        .cell {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            position: relative;
-            box-sizing: border-box;
-        }
-        
-        .cell:hover:not(.empty):not(.given) {
-            background: #edf2f7;
-            transform: scale(1.05);
-        }
-        
-        .cell.clickable {
-            cursor: pointer;
-            box-shadow: inset 0 0 0 2px transparent;
-        }
-        
-        .cell.clickable:hover {
-            box-shadow: inset 0 0 0 2px #4299e1;
-        }
-        
-        .cell.wrong {
-            background-color: #fed7d7 !important;
-            color: #e53e3e;
-            animation: shake 0.5s ease-in-out;
-        }
-        
-        .cell.given {
-            font-weight: 900;
-            cursor: default;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-3px); }
-            75% { transform: translateX(3px); }
-        }
-        
-        .input-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 1000;
-            text-align: center;
-        }
-        
-        .input-popup h3 {
-            margin-top: 0;
-            color: #2d3748;
-        }
-        
-        .number-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .number-btn {
-            width: 50px;
-            height: 50px;
-            border: 2px solid #e2e8f0;
-            background: #f8fafc;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .number-btn:hover {
-            background: #667eea;
-            color: white;
-            transform: scale(1.05);
-        }
-        
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
-        
-        .timer-display {
-            text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border-radius: 10px;
-            color: white;
-            font-size: 1.2em;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .timer-warning {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24) !important;
-        }
-        
-        .timer-critical {
-            background: linear-gradient(45deg, #e74c3c, #c0392b) !important;
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .score-display {
-            background: #f0f8ff;
-            border: 2px solid #4a90e2;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .score-title {
-            font-size: 1.5em;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        
-        .score-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 15px 0;
-        }
-        
-        .score-item {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .score-label {
-            font-weight: bold;
-            color: #34495e;
-            font-size: 0.9em;
-        }
-        
-        .score-value {
-            font-size: 1.2em;
-            color: #2980b9;
-            margin-top: 5px;
-        }
-        
-        .region-a { background-color: #bee3f8; }
-        .region-b { background-color: #fbb6ce; }
-        .region-c { background-color: #c6f6d5; }
-        .region-d { background-color: #fed7aa; }
-        .empty { background-color: #f7fafc; color: #a0aec0; }
-        
-        .rules {
-            margin-top: 30px;
-            background: #f0fff4;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #38a169;
-        }
-        
-        .rules h3 {
-            color: #2f855a;
-            margin-top: 0;
-        }
-        
-        .rules ul {
-            color: #2d3748;
-            line-height: 1.6;
-        }
-        
-        .stats {
-            margin-top: 20px;
-            text-align: center;
-            color: #4a5568;
-            font-style: italic;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div id="headerArea">
             <h1>Hudoku - Half Sudoku</h1>
-            <p class="subtitle">
-                A fresh take on Sudoku with a twist.
-                Challenge your friend: Loser buys the winner a beer! (Best of 3 rounds)
-            </p>
+            <div class="subtitle">
+                Arrr! The legendary treasure hunt for the sharpest mind on the seven seas 🏴‍☠️
+            </div>
         </div>
         
         <div class="controls" id="mainMenuControls">
             <button onclick="startPuzzle('4x5')" id="start4x5">I have 30 seconds</button>
             <button onclick="startPuzzle('6x5')" id="start6x5">I have 60 seconds</button>
         </div>
+
+        <div class="stats" id="stats"></div>
         
+        <div class="content-section">
+            <div class="section-header">The Legend of Captain Numberskull's Treasure:</div>
+            <div class="section-content">
+                Long ago, the infamous pirate Captain Numberskull discovered that the smartest crew member could navigate treacherous waters faster than any compass. Before each raid, his crew would gather 'round and solve number puzzles to determine who got the finest rum from their shared treasure chest!
+            </div>
+        </div>
+
+        <div class="content-section">
+            <div class="section-header">How Ye Play, Matey:</div>
+            <div class="section-content">
+                <ul style="margin: 0 0 0 18px; padding:0; font-size:1.05em; list-style:disc;">
+                    <li>Gather yer crew and everyone tosses some doubloons in the jar</li>
+                    <li>Start the challenge on "1-2-3!" like proper pirates</li>
+                    <li>Fastest solver with the highest score claims the booty</li>
+                    <li>Winner gets their grog paid for from the crew's treasure pot</li>
+                    <li>Perfect for when ye need to prove who's got the sharpest cutlass... er, mind!</li>
+                </ul>
+            </div>
+        </div>
+
         <div id="timerContainer" style="display: none;">
             <div class="timer-display" id="timerDisplay">
                 ⏰ Time Remaining: <span id="timerValue">15</span>s
@@ -326,21 +55,29 @@
         <div class="controls" id="gameActionControls" style="display:none; justify-content:center; margin-top:20px;">
             <button onclick="resetGame()" id="resetBtn" style="display: none;">Back to Menu</button>
         </div>
-        
-        <div class="stats" id="stats"></div>
-   
-        <div class="rules">
-            <h3>🧩 Hudoku Rules</h3>
-            <ul>
-                <li><strong>How to Play:</strong> Click on any '?' cell to enter a number</li>
-                <li><strong>Timer System:</strong> You start with 30 seconds (4x5) or 60 seconds (6x5). Each correct answer adds 2 seconds!</li>
-                <li><strong>Game End:</strong> When timer reaches 0, the game ends and you are scored for how many cells you resolved.</li>
-                <li><strong>No Repeats:</strong> No number appears twice in any row, column, or colored region</li>
-                <li><strong>Region 3x3 grids:</strong> Use numbers 1-9</li>
-                <li><strong>Region 2x2 grids:</strong> Use numbers 1-4</li>
-                <li><strong>Wrong Answer:</strong> Incorrect entries turn red and disappear after 1.5 seconds (penalty applied)</li>
-                <li><strong>Scoring:</strong> More cells solved = higher score. Wrong answers = penalties. If you finish, you get a bonus for time left!</li>
-            </ul>
+    
+        <div class="content-section">
+            <h2 class="section-header">⚓ Captain's Orders (Game Rules)</h2>
+            <div class="section-content">
+                <div style="font-size:1em; margin-bottom:10px;">
+                    Know yer Sudoku basics? Good! If not, <a href="https://www.youtube.com/watch?v=kvShKsHNqWc" target="_blank" style="color:#e09b2d; text-decoration:underline;">watch this quick tutorial</a> before ye embarrass yerself, ye landlubber!
+                </div>
+                <div style="color:#e0eafc;">
+                    <div style="font-weight:bold; margin-bottom:6px;">Hudoku Twists (Pay attention, ye scurvy dogs!):</div>
+                    <ul style="margin: 0 0 0 18px; padding:0;">
+                        <li>🏴‍☠️ <strong>Cursed Regions:</strong> Unlike regular Sudoku, our treasure maps have <strong>negative regions</strong> (marked with dark colors). These cursed areas work backwards - avoid repeating numbers here too!</li>
+                        <li>🏴‍☠️ <strong>Two Map Sizes:</strong>
+                            <ul style="margin: 4px 0 0 18px;">
+                                <li><strong>Quick Raid (4x5):</strong> 30 seconds to prove yer worth</li>
+                                <li><strong>Epic Voyage (6x5):</strong> 60 seconds for the bold and foolhardy</li>
+                            </ul>
+                        </li>
+                        <li>🏴‍☠️ <strong>Time be Tickin':</strong> Each correct answer adds 2 precious seconds to yer hourglass!</li>
+                        <li>🏴‍☠️ <strong>Wrong Moves:</strong> Mess up and yer number turns red before vanishing like a ghost ship. Penalties apply, ye fool!</li>
+                        <li>🏴‍☠️ <strong>Victory Conditions:</strong> Most cells solved when time runs out wins the treasure. Finish early? Bonus points for leftover time, savvy?</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -942,6 +679,8 @@
                 showGameActionControls(true);
                 document.getElementById('resetBtn').style.display = 'inline-block';
                 document.getElementById('timerContainer').style.display = 'block';
+                // Hide all content-section elements
+                document.querySelectorAll('.content-section').forEach(el => el.style.display = 'none');
                 startTimer();
                 updateDisplay();
             }
@@ -958,6 +697,8 @@
             document.getElementById('resetBtn').style.display = 'none';
             document.getElementById('timerContainer').style.display = 'none';
             stopTimer();
+            // Show all content-section elements
+            document.querySelectorAll('.content-section').forEach(el => el.style.display = '');
             updateDisplay();
         }
         
@@ -994,7 +735,7 @@
                 let statsText = `${currentPuzzleType.toUpperCase()}: ${data.revealedCount}/${data.totalCells} revealed (${percentage}%)`;
                 
                 if (data.hintsUsed > 0) {
-                    statsText += ` • Auto-hints: ${data.hintsUsed}`;
+                    statsText += ` • ${data.hintsUsed} hints used`;
                 }
                 
                 if (gameStats.incorrectEntries > 0) {
