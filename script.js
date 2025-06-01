@@ -709,3 +709,16 @@ document.addEventListener('DOMContentLoaded', function() {
 function showGameActionControls(show) {
     document.getElementById('gameActionControls').style.display = show ? 'flex' : 'none';
 }
+
+// Show video in introScreen when loaded, otherwise show image
+window.addEventListener('DOMContentLoaded', function() {
+    var video = document.getElementById('introBgVideo');
+    var img = document.getElementById('introBgImg');
+    if (video && img) {
+        video.addEventListener('canplay', function() {
+            img.style.display = 'none';
+            video.style.display = 'block';
+        });
+        // In case video fails to load, keep image visible
+    }
+});
