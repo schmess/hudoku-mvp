@@ -470,7 +470,6 @@ function calculateScore(timerExpired = false) {
         bonus = gameTimer * 250; // 250 points per second left if finished
         finalScore += bonus;
     }
-    if (finalScore < 0) finalScore = 0;
     return {
         finalScore,
         resolved,
