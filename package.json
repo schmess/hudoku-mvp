@@ -1,0 +1,14 @@
+{
+  "name": "hudoku",
+  "version": "1.0.0",
+  "description": "This document describes the core logic and algorithms behind the Hudoku (Half Sudoku) puzzle game, focusing on the data structures, puzzle generation, solving, and gameplay loop. The goal is to provide a language-agnostic, pseudocode-based guide for reimplementing the game in any programming language.",
+  "main": "script.js",
+  "scripts": {
+    "deploy": "gh-pages -d ./ --cname hudoku.com"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}
