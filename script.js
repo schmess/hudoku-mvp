@@ -246,7 +246,7 @@ function renderGrid(grid, template, title, isPuzzle, solution) {
         const percentage = Math.round((data.revealedCount / data.totalCells) * 100);
         const progressEl = document.createElement('div');
         progressEl.style.cssText = 'font-size: 0.9em; color: #ffffff80; margin-bottom: 10px; font-weight: normal;';
-        progressEl.textContent = `${data.revealedCount}/${data.totalCells} revealed (${percentage}%)`;
+        progressEl.textContent = `${data.revealedCount}/${data.totalCells} revealed - ${percentage}%`;
         if (data.hintsUsed > 0) {
             progressEl.textContent += ` • ${data.hintsUsed} hints used`;
         }
@@ -362,10 +362,10 @@ function updateTimerDisplay() {
     const timerDisplayEl = document.getElementById('timerDisplay');
     if (timerDisplayEl) {
         if (timerPaused) {
-            timerDisplayEl.innerHTML = '⏸️ Paused';
+            timerDisplayEl.innerHTML = '🍺 Paused';
             timerDisplayEl.style.opacity = '0.6';
         } else {
-            timerDisplayEl.innerHTML = '⏰ Time Remaining: <span id="timerValue">' + Math.max(0, gameTimer) + '</span>s';
+            timerDisplayEl.innerHTML = '⏳ Hourglass: <span id="timerValue">' + Math.max(0, gameTimer) + '</span>s';
             timerDisplayEl.style.opacity = '1';
         }
         // Update timer styling based on remaining time
@@ -397,18 +397,24 @@ function showNumberInput(puzzleType, row, col) {
     const popup = document.createElement('div');
     popup.className = 'input-popup';
     const title = document.createElement('h3');
-    title.textContent = `Enter number for Region ${region.toUpperCase()}`;
+    if (showOnlyPossibleNumbers) {
+        title.textContent = "What numbers be possible, matey?";
+    } else {
+        title.textContent = "Pick yer number, ye scallywag!";
+    }
     popup.appendChild(title);
 
+    /*
     const subtitle = document.createElement('p');
     if (showOnlyPossibleNumbers) {
-        subtitle.textContent = `Possible numbers: ${possibleNumbers.join(', ')}`;
+        subtitle.textContent =`Possible numbers: ${possibleNumbers.join(', ')}`;
     } else {
-        subtitle.textContent = `Numbers: ${validNumbers.join(', ')}`;
+        subtitle.textContent = ``;
     }
     subtitle.style.color = '#666';
     subtitle.style.margin = '0 0 15px 0';
     popup.appendChild(subtitle);
+    */
 
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'number-buttons';
@@ -492,30 +498,31 @@ function showScoreScreen(scoreData) {
     scoreEl.className = 'score-display';
     let bonusText = '';
     if (scoreData.bonus > 0) {
-        bonusText = `<div class="score-item"><div class="score-label">Time Bonus</div><div class="score-value">+${scoreData.bonus}</div></div>`;
+        bonusText = `<div class="score-item"><div class="score-label">Time Bonus (Booty!)</div><div class="score-value">+${scoreData.bonus}</div></div>`;
     }
-    let timerText = scoreData.timerExpired ? '<div style="color:#e74c3c;">⏰ Timer expired!</div>' : '';
-    let pausedText = scoreData.paused ? '<div style="color:#e74c3c;">⏸️ Timer was paused — Score is 0!</div>' : '';
-    // Format gameStartTime as HH:MM (24-hour)
+    let timerText = scoreData.timerExpired ? '<div style="color:#e74c3c;">⏳ Yer time be up, ye landlubber!</div>' : '';
+    let pausedText = scoreData.paused ? '<div style="color:#e74c3c;">⏸️ Ye paused the hourglass — No booty for ye!</div>' : '';
+    // Format gameStartTime as HH:MM:SS
     let startedTimeText = '';
     if (gameStartTime) {
         const startDate = new Date(gameStartTime);
         const hours = startDate.getHours().toString().padStart(2, '0');
         const minutes = startDate.getMinutes().toString().padStart(2, '0');
-        startedTimeText = `<div class=\"score-item\"><div class=\"score-label\">Game Started</div><div class=\"score-value\">${hours}:${minutes}</div></div>`;
+        const seconds = startDate.getSeconds().toString().padStart(2, '0');
+        startedTimeText = `<div class=\"score-item\"><div class=\"score-label\">Ye set sail at</div><div class=\"score-value\">${hours}:${minutes}:${seconds}</div></div>`;
     }
     scoreEl.innerHTML = `
-        <div class="score-title">🎉 Game Over!</div>
+        <div class="score-title">🏴‍☠️ The Game Be Over, Matey!</div>
         <div style="font-size: 2em; color: #e74c3c; margin: 10px 0; font-weight: bold;">
-            Score: ${scoreData.finalScore}
+            Yer Score: ${scoreData.finalScore}
         </div>
         <div class="score-details">
             <div class="score-item">
-                <div class="score-label">Cells Solved</div>
+                <div class="score-label">Cells Conquered</div>
                 <div class="score-value">${scoreData.resolved || 0}/${scoreData.totalCells || 0}</div>
             </div>
             <div class="score-item">
-                <div class="score-label">Wrong Entries</div>
+                <div class="score-label">Blunders Made</div>
                 <div class="score-value">${scoreData.incorrectEntries || 0}</div>
             </div>
             ${bonusText}
@@ -524,9 +531,9 @@ function showScoreScreen(scoreData) {
         ${timerText}
         ${pausedText}
         <div style="margin-top: 15px; color: #7f8c8d; font-style: italic;">
-            💡 Solve more cells and finish faster for a higher score!
+            ☠️ Outwit the crew and claim the treasure by fillin' more cells and finishin' faster!
         </div>
-        <button id="backToMenuBtn" style="margin-top: 25px; padding: 12px 32px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Back to Menu</button>
+        <button id="backToMenuBtn" style="margin-top: 25px; padding: 12px 32px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Back to the Main Deck</button>
     `;
     container.appendChild(scoreEl);
     setTimeout(() => {
