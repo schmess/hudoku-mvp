@@ -364,17 +364,23 @@ button:hover {
 } 
 
 #gameScreen {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
+    position: relative;
+    height: calc(100vh - 40px);
     margin: 20px;
+    display: flex;
 }
 
 #gameScreen .container {
-    height: calc(100% - 60px);
+    flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     background: linear-gradient(45deg, #145374, #00334e);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#gameScreen #timerContainer {
+    width: 100%;
 }

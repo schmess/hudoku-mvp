@@ -240,25 +240,6 @@ function renderGrid(grid, template, title, isPuzzle, solution) {
     titleEl.textContent = title;
     section.appendChild(titleEl);
     */
-    // Add progress and switch info for puzzles
-    if (isPuzzle && currentPuzzleType) {
-        const data = currentPuzzles[currentPuzzleType];
-        const percentage = Math.round((data.revealedCount / data.totalCells) * 100);
-        const progressEl = document.createElement('div');
-        progressEl.style.cssText = 'font-size: 0.9em; color: #ffffff80; margin-bottom: 10px; font-weight: normal;';
-        progressEl.textContent = `${data.revealedCount}/${data.totalCells} revealed - ${percentage}%`;
-        if (data.hintsUsed > 0) {
-            progressEl.textContent += ` • ${data.hintsUsed} hints used`;
-        }
-        // Add other puzzle info
-        const otherPuzzle = currentPuzzleType === '4x5' ? '6x5' : '4x5';
-        if (currentPuzzles[otherPuzzle]) {
-            const otherData = currentPuzzles[otherPuzzle];
-            const otherPercentage = Math.round((otherData.revealedCount / otherData.totalCells) * 100);
-            progressEl.textContent += ` • ${otherPuzzle.toUpperCase()}: ${otherPercentage}% complete`;
-        }
-        section.appendChild(progressEl);
-    }
     const gridEl = document.createElement('div');
     gridEl.className = 'grid';
     // Track used numbers for empty cells per mask (for this render) -- now unused
@@ -324,6 +305,22 @@ function renderGrid(grid, template, title, isPuzzle, solution) {
         gridEl.appendChild(rowEl);
     });
     section.appendChild(gridEl);
+    // Add progress and switch info for puzzles
+    if (isPuzzle && currentPuzzleType) {
+        const data = currentPuzzles[currentPuzzleType];
+        const percentage = Math.round((data.revealedCount / data.totalCells) * 100);
+        const progressEl = document.createElement('div');
+        progressEl.style.cssText = 'position: absolute; bottom: 30px; right: 30px; font-size: 0.9em; color: #ffffff80; font-weight: normal;';
+        progressEl.textContent = `${data.revealedCount} / ${data.totalCells}`;
+        // Add other puzzle info
+        const otherPuzzle = currentPuzzleType === '4x5' ? '6x5' : '4x5';
+        if (currentPuzzles[otherPuzzle]) {
+            const otherData = currentPuzzles[otherPuzzle];
+            const otherPercentage = Math.round((otherData.revealedCount / otherData.totalCells) * 100);
+            progressEl.textContent += ` • ${otherPuzzle.toUpperCase()}: ${otherPercentage}% complete`;
+        }
+        section.appendChild(progressEl);
+    }
     return section;
 }
 
