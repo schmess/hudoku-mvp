@@ -171,7 +171,7 @@ button:hover {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin: 15px 0;
+    margin: 30px 15px;
 }
 
 .number-btn {
@@ -185,6 +185,7 @@ button:hover {
     cursor: pointer;
     color: #f7c873;
     transition: all 0.2s ease;
+    justify-self: center;
 }
 
 .number-btn:hover {
